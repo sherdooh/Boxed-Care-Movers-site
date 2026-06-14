@@ -1,5 +1,57 @@
 [
   {
+    "id": "BWC-20260614-878708",
+    "date": "6/14/2026, 8:57:58 PM",
+    "name": "John Odhis",
+    "email": "shadrackiplangat@hotmail.com",
+    "phone": "+254725082945",
+    "from_location": "Kilimani",
+    "to_location": "MOI Av",
+    "current_floor": "1st floor",
+    "destination_floor": "7th floor",
+    "current_size": "Studio",
+    "destination_size": "Bedsitter",
+    "move_date": "2026-06-17",
+    "move_type": "Storage",
+    "message": "THE LORD IS MY SHEPHERD, I SHALL NOT BE IN WANT.\nHE MAKES ME LIE DOWN IN GREEN PASTURES\nHE LEADS ME BESIDE QUIET WATERS , HE RESTORES MY SOUL\nHE GUIDES MY PATHS IN RIGHTEOUSNESS, FOR HIS NAME’S SAKE.\n\n",
+    "quoteNumber": "BWC-20260614-878708",
+    "createdAt": "2026-06-14T17:57:58.764Z"
+  },
+  {
+    "id": "BWC-20260614-826624",
+    "date": "6/14/2026, 8:57:06 PM",
+    "name": "Kiplangat Shadrack",
+    "email": "shadrackiplangat@hotmail.com",
+    "phone": "+254700581448",
+    "from_location": "lld",
+    "to_location": "ii",
+    "current_floor": "4th floor",
+    "destination_floor": "3rd floor",
+    "current_size": "6+ bedroom",
+    "destination_size": "6+ bedroom",
+    "move_date": "",
+    "move_type": "",
+    "message": "",
+    "quoteNumber": "BWC-20260614-826624",
+    "createdAt": "2026-06-14T17:57:06.680Z"
+  },
+  {
+    "id": "1781458978024",
+    "date": "6/14/2026, 8:42:58 PM",
+    "email": "test@test.com",
+    "name": "Test",
+    "phone": "123",
+    "createdAt": "2026-06-14T17:42:58.055Z"
+  },
+  {
+    "id": "1781458659588",
+    "date": "6/14/2026, 8:37:39 PM",
+    "email": "test@test.com",
+    "name": "Test",
+    "phone": "123",
+    "createdAt": "2026-06-14T17:37:39.681Z"
+  },
+  {
     "id": "BWC-20260613-950583",
     "date": "6/13/2026, 10:29:10 PM",
     "name": "Kiplangat Shadrack Shadrack",
@@ -16,23 +68,5 @@
     "message": "",
     "quoteNumber": "BWC-20260613-950583",
     "createdAt": "2026-06-13T19:29:10.638Z"
-  },
-  {
-    "id": "BWC-20260613-795489",
-    "date": "6/13/2026, 10:26:35 PM",
-    "name": "Kiplangat Shadrack Shadrack",
-    "email": "sherkiplah@gmail.com",
-    "phone": "+254700581448",
-    "from_location": "lld",
-    "to_location": "lld",
-    "current_floor": "3rd floor",
-    "destination_floor": "6th floor",
-    "current_size": "Villa",
-    "destination_size": "6+ bedroom",
-    "move_date": "2026-06-17",
-    "move_type": "Office/Commercial",
-    "message": "",
-    "quoteNumber": "BWC-20260613-795489",
-    "createdAt": "2026-06-13T19:26:35.867Z"
   }
 ]
