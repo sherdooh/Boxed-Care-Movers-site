@@ -15,9 +15,10 @@ import { fetchSiteContent } from './lib/api';
 function App() {
   const [scrolled, setScrolled] = useState(false);
   const [content, setContent] = useState(defaultSiteContent);
+
   const isAdmin =
     typeof window !== 'undefined' &&
-    (window.location.pathname.startsWith('/admin') || window.location.hostname.startsWith('admin.'));
+    window.location.pathname.startsWith('/admin');
 
   const getCookie = (name: string) =>
     document.cookie.split('; ').find((cookie) => cookie.startsWith(`${name}=`))?.split('=')[1] || '';
@@ -33,23 +34,6 @@ function App() {
     }
     return `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
   };
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const { pathname, host, hostname, protocol, search } = window.location;
-    if (pathname.startsWith('/admin') && !hostname.startsWith('admin.')) {
-      const [hostOnly, port] = host.split(':');
-      const localHosts = ['localhost', '127.0.0.1', '0.0.0.0'];
-      // Detect IPv4 addresses (e.g. 192.168.1.42) and skip admin subdomain redirect for IPs
-      const isIPv4 = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostOnly);
-      if (!localHosts.includes(hostOnly) && !isIPv4) {
-        const adminHost = `admin.${hostOnly}${port ? `:${port}` : ''}`;
-        const target = `${protocol}//${adminHost}${pathname}${search}`;
-        // Use replace to avoid creating an extra history entry
-        window.location.replace(target);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || isAdmin) return;
