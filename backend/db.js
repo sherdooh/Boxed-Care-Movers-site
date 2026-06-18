@@ -1,27 +1,23 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// ============================================
-// Use the full connection string from Supabase
-// ============================================
 const connectionString = process.env.DATABASE_URL;
 
-// ============================================
-// Create connection pool
-// ============================================
+if (!connectionString) {
+  console.error('❌ DATABASE_URL is not set in environment variables');
+  process.exit(1);
+}
+
 const pool = new Pool({
   connectionString: connectionString,
   ssl: {
-    rejectUnauthorized: false  // Required for Supabase
+    rejectUnauthorized: false
   },
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
 });
 
-// ============================================
-// Test connection function
-// ============================================
 async function testConnection() {
   try {
     const client = await pool.connect();
@@ -34,7 +30,4 @@ async function testConnection() {
   }
 }
 
-// ============================================
-// Export the pool and test function
-// ============================================
 module.exports = { pool, testConnection };
