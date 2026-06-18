@@ -19,60 +19,49 @@ router.post('/', [
     const id = req.body.id || Date.now().toString();
     const date = new Date().toLocaleString();
 
-    // Build an object of all possible fields, defaulting to null
-    const leadData = {
-        id,
-        date,
-        name: req.body.name,
-        email: req.body.email,
-        phone: req.body.phone,
-        from_location: req.body.from_location || null,
-        to_location: req.body.to_location || null,
-        current_floor: req.body.current_floor || null,
-        destination_floor: req.body.destination_floor || null,
-        current_size: req.body.current_size || null,
-        destination_size: req.body.destination_size || null,
-        move_date: req.body.move_date || null,
-        move_type: req.body.move_type || null,
-        message: req.body.message || null,
-        quoteNumber: req.body.quoteNumber || null,
-    };
-
-    // Convert to arrays for the INSERT query
-    const columns = Object.keys(leadData);
-    const values = Object.values(leadData);
-
-    // Build the placeholders (?, ?, ...)
-    const placeholders = values.map(() => '?').join(',');
+    const {
+        name, email, phone, from_location, to_location,
+        current_floor, destination_floor, current_size,
+        destination_size, move_date, move_type, message, quoteNumber
+    } = req.body;
 
     try {
-        const query = `INSERT INTO leads (${columns.join(',')}) VALUES (${placeholders})`;
-        const [result] = await pool.execute(query, values);
-
-        res.status(201).json(leadData);
+        const query = `
+            INSERT INTO leads 
+            (id, date, name, email, phone, from_location, to_location, 
+             current_floor, destination_floor, current_size, destination_size, 
+             move_date, move_type, message, quoteNumber) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            RETURNING *;
+        `;
+        const values = [id, date, name, email, phone, from_location, to_location,
+             current_floor, destination_floor, current_size, destination_size,
+             move_date, move_type, message, quoteNumber];
+        
+        const result = await pool.query(query, values);
+        res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error('❌ Database error:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Error creating lead:', err);
         next(err);
     }
 });
 
-// GET /api/leads – admin only
+// GET /api/leads – admin
 router.get('/', auth, async (req, res, next) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM leads ORDER BY created_at DESC');
-        res.json(rows);
+        const result = await pool.query('SELECT * FROM leads ORDER BY created_at DESC');
+        res.json(result.rows);
     } catch (err) {
         console.error('Error fetching leads:', err);
         next(err);
     }
 });
 
-// DELETE /api/leads/:id – admin only
+// DELETE /api/leads/:id – admin
 router.delete('/:id', auth, async (req, res, next) => {
     try {
-        const [result] = await pool.execute('DELETE FROM leads WHERE id = ?', [req.params.id]);
-        if (result.affectedRows === 0) {
+        const result = await pool.query('DELETE FROM leads WHERE id = $1 RETURNING id', [req.params.id]);
+        if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Lead not found' });
         }
         res.status(204).send();
