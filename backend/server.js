@@ -7,22 +7,20 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 
 // Middleware
-// app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
-
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5174',
+  origin: [
+    'https://boxedwithcare.co.ke',
+    'https://www.boxedwithcare.co.ke',
+    'https://api.boxedwithcare.co.ke',
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ],
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// app.use(cors({
-//   origin: '*',   // or '*' for testing only
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization']
-// }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -46,8 +44,8 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// Global error handler (prevents crashes)
+// Global error handler
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
+// Export the app instead of listening
+module.exports = app;

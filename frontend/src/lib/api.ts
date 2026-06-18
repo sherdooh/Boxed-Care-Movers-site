@@ -10,30 +10,8 @@ export interface GoogleReview {
   relativeTimeDescription?: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
-
-const getApiBase = () => {
-  if (typeof window !== 'undefined' && window.location) {
-    const currentHost = window.location.hostname;
-    if (API_BASE) {
-      try {
-        const configuredUrl = new URL(API_BASE, window.location.origin);
-        if (
-          (configuredUrl.hostname === 'localhost' || configuredUrl.hostname === '127.0.0.1') &&
-          currentHost !== 'localhost' &&
-          currentHost !== '127.0.0.1'
-        ) {
-          return window.location.origin;
-        }
-      } catch {
-        // ignore malformed API_BASE and fall back to current origin
-      }
-      return API_BASE;
-    }
-    return window.location.origin;
-  }
-  return API_BASE || '';
-};
+// FORCE all API calls to use this URL - no fallback logic
+const API_BASE = 'https://api.boxedwithcare.co.ke';
 
 async function parseResponse(response: Response) {
   const text = await response.text();
@@ -44,12 +22,12 @@ async function parseResponse(response: Response) {
 }
 
 export async function fetchSiteContent(): Promise<SiteContent> {
-  const response = await fetch(`${getApiBase()}/api/content`);
+  const response = await fetch(`${API_BASE}/api/content`);
   return parseResponse(response);
 }
 
 export async function saveSiteContent(content: SiteContent, token: string): Promise<SiteContent> {
-  const response = await fetch(`${getApiBase()}/api/content`, {
+  const response = await fetch(`${API_BASE}/api/content`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -61,7 +39,7 @@ export async function saveSiteContent(content: SiteContent, token: string): Prom
 }
 
 export async function fetchLeads(token: string): Promise<LeadEntry[]> {
-  const response = await fetch(`${getApiBase()}/api/leads`, {
+  const response = await fetch(`${API_BASE}/api/leads`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -70,7 +48,7 @@ export async function fetchLeads(token: string): Promise<LeadEntry[]> {
 }
 
 export async function postLead(lead: LeadEntry): Promise<LeadEntry> {
-  const response = await fetch(`${getApiBase()}/api/leads`, {
+  const response = await fetch(`${API_BASE}/api/leads`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -90,7 +68,7 @@ export async function loginAdmin(username: string, password: string): Promise<{ 
 }
 
 export async function verifyToken(token: string): Promise<void> {
-  const response = await fetch(`${getApiBase()}/api/me`, {
+  const response = await fetch(`${API_BASE}/api/me`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -115,7 +93,7 @@ export async function uploadFile(file: File, token: string): Promise<string> {
 }
 
 export async function deleteLead(leadId: string, token: string): Promise<void> {
-  const response = await fetch(`${getApiBase()}/api/leads/${leadId}`, {
+  const response = await fetch(`${API_BASE}/api/leads/${leadId}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -125,7 +103,7 @@ export async function deleteLead(leadId: string, token: string): Promise<void> {
 }
 
 export async function fetchGoogleReviews(): Promise<GoogleReview[]> {
-  const response = await fetch(`${getApiBase()}/api/google-reviews`);
+  const response = await fetch(`${API_BASE}/api/google-reviews`);
   return parseResponse(response);
 }
 
@@ -137,4 +115,3 @@ export async function createLead(lead: LeadEntry): Promise<LeadEntry> {
   });
   return parseResponse(response);
 }
-
