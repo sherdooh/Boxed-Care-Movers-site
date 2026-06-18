@@ -6,12 +6,11 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// Middleware
+// CORS - allow your frontend
 app.use(cors({
   origin: [
     'https://boxedwithcare.co.ke',
     'https://www.boxedwithcare.co.ke',
-    'https://api.boxedwithcare.co.ke',
     'http://localhost:5173',
     'http://localhost:5174'
   ],
@@ -25,10 +24,7 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'Backend is running'
-  });
+  res.json({ status: 'ok', message: 'Backend is running on Vercel!' });
 });
 
 // Routes
@@ -44,8 +40,7 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-// Global error handler
 app.use(errorHandler);
 
-// Export the app instead of listening
+// ✅ Export for Vercel
 module.exports = app;
