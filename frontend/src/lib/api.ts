@@ -10,8 +10,7 @@ export interface GoogleReview {
   relativeTimeDescription?: string;
 }
 
-// FORCE all API calls to use this URL - no fallback logic
-const API_BASE = 'https://api.boxedwithcare.co.ke';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://boxed-care-movers-backend.vercel.app';
 
 async function parseResponse(response: Response) {
   const text = await response.text();
