@@ -1,9 +1,14 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// ============================================
 // Use the full connection string from Supabase
+// ============================================
 const connectionString = process.env.DATABASE_URL;
 
+// ============================================
+// Create connection pool
+// ============================================
 const pool = new Pool({
   connectionString: connectionString,
   ssl: {
@@ -14,6 +19,9 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
+// ============================================
+// Test connection function
+// ============================================
 async function testConnection() {
   try {
     const client = await pool.connect();
@@ -26,4 +34,7 @@ async function testConnection() {
   }
 }
 
+// ============================================
+// Export the pool and test function
+// ============================================
 module.exports = { pool, testConnection };
