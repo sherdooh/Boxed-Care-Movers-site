@@ -672,155 +672,168 @@ export default function Admin() {
     }
   };
 
-  const generateQuoteTemplate = async (lead: QuoteDraft) => {
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 36;
-    let y = margin;
+const generateQuoteTemplate = async (lead: QuoteDraft) => {
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 36;
+  let y = margin;
 
-    const issueDate = lead.issueDate || new Date().toISOString().slice(0, 10);
-    const defaultValidUntil = new Date();
-    defaultValidUntil.setMonth(defaultValidUntil.getMonth() + 1);
-    const validUntil = lead.validUntil || defaultValidUntil.toISOString().slice(0, 10);
-    const quoteNumber = lead.quoteNumber || formatQuoteNumber(lead.id, issueDate);
+  // ✅ Helper to format date
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '-';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
 
-    const wrapText = (text: string, maxWidth: number, size = 10, style: 'normal' | 'bold' = 'normal') => {
-      doc.setFont('helvetica', style);
-      doc.setFontSize(size);
-      return doc.splitTextToSize(text, maxWidth);
-    };
+  const issueDate = lead.issueDate || new Date().toISOString().slice(0, 10);
+  const defaultValidUntil = new Date();
+  defaultValidUntil.setMonth(defaultValidUntil.getMonth() + 1);
+  const validUntil = lead.validUntil || defaultValidUntil.toISOString().slice(0, 10);
+  const quoteNumber = lead.quoteNumber || formatQuoteNumber(lead.id, issueDate);
 
-    const drawBox = (x: number, w: number, h: number, fillColor: [number, number, number], stroke = true) => {
-      doc.setFillColor(...fillColor);
-      if (stroke) {
-        doc.setDrawColor(156, 163, 175);
-        doc.roundedRect(x, y, w, h, 10, 10, 'FD');
-      } else {
-        doc.roundedRect(x, y, w, h, 10, 10, 'F');
-      }
-    };
+  const wrapText = (text: string, maxWidth: number, size = 10, style: 'normal' | 'bold' = 'normal') => {
+    doc.setFont('helvetica', style);
+    doc.setFontSize(size);
+    return doc.splitTextToSize(text, maxWidth);
+  };
 
-    const ensureSpace = (height: number) => {
-      if (y + height > pageHeight - margin) {
-        doc.addPage();
-        y = margin;
-      }
-    };
+  const drawBox = (x: number, w: number, h: number, fillColor: [number, number, number], stroke = true) => {
+    doc.setFillColor(...fillColor);
+    if (stroke) {
+      doc.setDrawColor(156, 163, 175);
+      doc.roundedRect(x, y, w, h, 10, 10, 'FD');
+    } else {
+      doc.roundedRect(x, y, w, h, 10, 10, 'F');
+    }
+  };
 
-    doc.setFillColor(51, 65, 85);
-    doc.rect(0, 0, pageWidth, 140, 'F');
-    doc.setTextColor(255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    doc.text(siteContent.siteName || 'Boxed With Care Movers', margin, 50);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.text(siteContent.siteTagline || 'Safe • Reliable • Affordable Moving Solutions', margin, 68);
-    doc.setFontSize(9);
-    doc.text(`Phone: ${siteContent.phone || '-'}`, margin, 88);
-    doc.text(`Email: ${siteContent.email || '-'}`, margin, 100);
-    doc.text(`Website: ${siteContent.website || '-'}`, margin, 112);
+  const ensureSpace = (height: number) => {
+    if (y + height > pageHeight - margin) {
+      doc.addPage();
+      y = margin;
+    }
+  };
 
-    const quoteBoxW = 208;
-    const quoteBoxX = pageWidth - margin - quoteBoxW;
-    doc.setFillColor(226, 232, 240);
-    doc.roundedRect(quoteBoxX, 26, quoteBoxW, 88, 12, 12, 'F');
-    doc.setTextColor(15, 23, 42);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text('OFFICIAL QUOTE', quoteBoxX + 14, 46);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Quote #: ${quoteNumber}`, quoteBoxX + 14, 62);
-    doc.text(`Issue: ${issueDate}`, quoteBoxX + 14, 74);
-    doc.text(`Valid: ${validUntil}`, quoteBoxX + 14, 86);
+  doc.setFillColor(51, 65, 85);
+  doc.rect(0, 0, pageWidth, 140, 'F');
+  doc.setTextColor(255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(24);
+  doc.text(siteContent.siteName || 'Boxed With Care Movers', margin, 50);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.text(siteContent.siteTagline || 'Safe • Reliable • Affordable Moving Solutions', margin, 68);
+  doc.setFontSize(9);
+  doc.text(`Phone: ${siteContent.phone || '-'}`, margin, 88);
+  doc.text(`Email: ${siteContent.email || '-'}`, margin, 100);
+  doc.text(`Website: ${siteContent.website || '-'}`, margin, 112);
 
-    y = 158;
-    const sectionWidth = pageWidth - margin * 2;
-    const columnGap = 14;
-    const columnWidth = (sectionWidth - columnGap) / 2;
-    const leftColumnX = margin + 14;
-    const rightColumnX = margin + 14 + columnWidth + columnGap;
-    const rightTextX = pageWidth - margin - 12;
-    const valueColumnX = leftColumnX + 140;
+  const quoteBoxW = 208;
+  const quoteBoxX = pageWidth - margin - quoteBoxW;
+  doc.setFillColor(226, 232, 240);
+  doc.roundedRect(quoteBoxX, 26, quoteBoxW, 88, 12, 12, 'F');
+  doc.setTextColor(15, 23, 42);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.text('OFFICIAL QUOTE', quoteBoxX + 14, 46);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Quote #: ${quoteNumber}`, quoteBoxX + 14, 62);
+  doc.text(`Issue: ${issueDate}`, quoteBoxX + 14, 74);
+  doc.text(`Valid: ${validUntil}`, quoteBoxX + 14, 86);
 
-    ensureSpace(150);
-    const summaryHeight = 120;
-    doc.setFillColor(241, 245, 249);
-    doc.roundedRect(margin, y, sectionWidth, summaryHeight, 10, 10, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text('Client Details', leftColumnX, y + 20);
+  y = 158;
+  const sectionWidth = pageWidth - margin * 2;
+  const columnGap = 14;
+  const columnWidth = (sectionWidth - columnGap) / 2;
+  const leftColumnX = margin + 14;
+  const rightColumnX = margin + 14 + columnWidth + columnGap;
+  const rightTextX = pageWidth - margin - 12;
+  const valueColumnX = leftColumnX + 140;
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text('Name:', leftColumnX, y + 42);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.name || '-', valueColumnX, y + 42);
+  ensureSpace(150);
+  const summaryHeight = 120;
+  doc.setFillColor(241, 245, 249);
+  doc.roundedRect(margin, y, sectionWidth, summaryHeight, 10, 10, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Client Details', leftColumnX, y + 20);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text('Phone:', leftColumnX, y + 58);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.phone || '-', valueColumnX, y + 58);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text('Name:', leftColumnX, y + 42);
+  doc.setFont('helvetica', 'bold');
+  doc.text(lead.name || '-', valueColumnX, y + 42);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text('Email:', leftColumnX, y + 74);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.email || '-', valueColumnX, y + 74);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Phone:', leftColumnX, y + 58);
+  doc.setFont('helvetica', 'bold');
+  doc.text(lead.phone || '-', valueColumnX, y + 58);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text('Move Type:', leftColumnX, y + 90);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.move_type || '-', valueColumnX, y + 90);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Email:', leftColumnX, y + 74);
+  doc.setFont('helvetica', 'bold');
+  doc.text(lead.email || '-', valueColumnX, y + 74);
 
-    y += summaryHeight + 20;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Move Type:', leftColumnX, y + 90);
+  doc.setFont('helvetica', 'bold');
+  doc.text(lead.move_type || '-', valueColumnX, y + 90);
 
-    const moveDetailsTop = y;
-    doc.setFillColor(226, 232, 240);
+  y += summaryHeight + 20;
 
-    const inventoryLinesCount = lead.inventory?.reduce((count, item) => count + wrapText(`• ${item.description || '-'} (${item.quantity || '-'})`, columnWidth - 12, 10).length, 0) || 1;
-    const serviceLinesCount = lead.services?.reduce((count, service) => count + wrapText(`• ${service}`, columnWidth - 12, 10).length, 0) || 1;
-    const rightContentRows = inventoryLinesCount + serviceLinesCount + 1;
-    const contentRows = Math.max(rightContentRows, 5);
-    const moveSectionHeight = 28 + contentRows * 14 + 70;
-    ensureSpace(moveSectionHeight + 20);
-    doc.roundedRect(margin, moveDetailsTop, sectionWidth, moveSectionHeight, 10, 10, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text('Move Details', leftColumnX, moveDetailsTop + 20);
-    doc.text('Inventory', rightColumnX, moveDetailsTop + 20);
+  const moveDetailsTop = y;
+  doc.setFillColor(226, 232, 240);
 
-    doc.setDrawColor(148, 163, 184);
-    doc.setLineWidth(0.75);
-    const separatorX = leftColumnX + columnWidth + columnGap / 2;
-    doc.line(separatorX, moveDetailsTop + 12, separatorX, moveDetailsTop + moveSectionHeight - 12);
+  const inventoryLinesCount = lead.inventory?.reduce((count, item) => count + wrapText(`• ${item.description || '-'} (${item.quantity || '-'})`, columnWidth - 12, 10).length, 0) || 1;
+  const serviceLinesCount = lead.services?.reduce((count, service) => count + wrapText(`• ${service}`, columnWidth - 12, 10).length, 0) || 1;
+  const rightContentRows = inventoryLinesCount + serviceLinesCount + 1;
+  const contentRows = Math.max(rightContentRows, 5);
+  const moveSectionHeight = 28 + contentRows * 14 + 70;
+  ensureSpace(moveSectionHeight + 20);
+  doc.roundedRect(margin, moveDetailsTop, sectionWidth, moveSectionHeight, 10, 10, 'FD');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Move Details', leftColumnX, moveDetailsTop + 20);
+  doc.text('Inventory', rightColumnX, moveDetailsTop + 20);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text('Pickup:', leftColumnX, moveDetailsTop + 42);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.from_location || '-', valueColumnX, moveDetailsTop + 42);
+  doc.setDrawColor(148, 163, 184);
+  doc.setLineWidth(0.75);
+  const separatorX = leftColumnX + columnWidth + columnGap / 2;
+  doc.line(separatorX, moveDetailsTop + 12, separatorX, moveDetailsTop + moveSectionHeight - 12);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text('Destination:', leftColumnX, moveDetailsTop + 58);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.to_location || '-', valueColumnX, moveDetailsTop + 58);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text('Pickup:', leftColumnX, moveDetailsTop + 42);
+  doc.setFont('helvetica', 'bold');
+  doc.text(lead.from_location || '-', valueColumnX, moveDetailsTop + 42);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text('Date:', leftColumnX, moveDetailsTop + 74);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.move_date || '-', valueColumnX, moveDetailsTop + 74);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Destination:', leftColumnX, moveDetailsTop + 58);
+  doc.setFont('helvetica', 'bold');
+  doc.text(lead.to_location || '-', valueColumnX, moveDetailsTop + 58);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text('Current house size:', leftColumnX, moveDetailsTop + 90);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.current_size || '-', valueColumnX, moveDetailsTop + 90);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Date:', leftColumnX, moveDetailsTop + 74);
+  doc.setFont('helvetica', 'bold');
+  // ✅ Format the move date
+  doc.text(formatDate(lead.move_date), valueColumnX, moveDetailsTop + 74);
 
-    doc.setFont('helvetica', 'normal');
-    doc.text('Destination house size:', leftColumnX, moveDetailsTop + 106);
-    doc.setFont('helvetica', 'bold');
-    doc.text(lead.destination_size || '-', valueColumnX, moveDetailsTop + 106);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Current house size:', leftColumnX, moveDetailsTop + 90);
+  doc.setFont('helvetica', 'bold');
+  doc.text(lead.current_size || '-', valueColumnX, moveDetailsTop + 90);
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Destination house size:', leftColumnX, moveDetailsTop + 106);
+  doc.setFont('helvetica', 'bold');
+  doc.text(lead.destination_size || '-', valueColumnX, moveDetailsTop + 106);
+
 
     const inventoryStartY = moveDetailsTop + 42;
     let inventoryY = inventoryStartY;
