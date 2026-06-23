@@ -6,10 +6,12 @@ import WhyUs from './components/sections/WhyUs';
 import HowItWorks from './components/sections/HowItWorks';
 import Testimonials from './components/sections/Testimonials';
 import Blog from './components/sections/Blog';
+import BlogDetails from './components/sections/BlogDetails';
 import QuoteForm from './components/sections/QuoteForm';
 import Footer from './components/layout/Footer';
 import { defaultSiteContent } from './lib/siteContent';
 import { fetchSiteContent } from './lib/api';
+import { slugifyBlogTitle } from './lib/blogUtils';
 
 // ============================================================
 // 1. Lazy load Admin (code splitting) – improves initial load
@@ -35,9 +37,12 @@ function App() {
   const [content, setContent] = useState(defaultSiteContent);
   const [loading, setLoading] = useState(true); // ✅ NEW: loading state
 
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
   const isAdmin =
     typeof window !== 'undefined' &&
     window.location.pathname.startsWith('/admin');
+  const isBlogDetailsRoute = currentPath.startsWith('/blog/');
+  const blogSlug = isBlogDetailsRoute ? decodeURIComponent(currentPath.split('/').filter(Boolean)[1] || '') : '';
 
   const getCookie = (name: string) =>
     document.cookie.split('; ').find((cookie) => cookie.startsWith(`${name}=`))?.split('=')[1] || '';
@@ -104,6 +109,11 @@ function App() {
     }
   }, [isAdmin, content]); // Re-run after content loads
 
+  const blogPosts = content.blogPosts.length ? content.blogPosts : defaultSiteContent.blogPosts;
+  const activeBlogPost = blogSlug
+    ? blogPosts.find((post) => (post.slug || slugifyBlogTitle(post.title)) === blogSlug)
+    : null;
+
   // ------------------------------------------------------------
   // Admin route – lazy loaded with Suspense
   // ------------------------------------------------------------
@@ -128,6 +138,25 @@ function App() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-500 border-t-transparent mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading site content…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isBlogDetailsRoute) {
+    if (activeBlogPost) {
+      return <BlogDetails content={content} post={activeBlogPost} posts={blogPosts} />;
+    }
+
+    return (
+      <div className="min-h-screen bg-[#f7f1e8] px-4 py-20 text-gray-900">
+        <div className="mx-auto max-w-3xl rounded-[32px] border border-white/70 bg-white/80 p-8 shadow-[0_24px_70px_rgba(107,81,50,0.12)] backdrop-blur-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">Article not found</p>
+          <h1 className="mt-4 text-4xl font-black tracking-[-0.04em]">This blog post does not exist.</h1>
+          <p className="mt-4 text-lg leading-8 text-gray-600">The link may be outdated, or the post may have been removed.</p>
+          <a href="/#blog" className="mt-8 inline-flex rounded-full bg-[#171311] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5">
+            Back to blog
+          </a>
         </div>
       </div>
     );

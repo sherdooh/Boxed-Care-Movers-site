@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 import { Upload, X } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { defaultSiteContent, SiteContent, LeadEntry } from '../lib/siteContent';
-import { fetchSiteContent, fetchLeads, loginAdmin, saveSiteContent, verifyToken, uploadFile, deleteLead, createLead } from '../lib/api';
+import { defaultSiteContent, SiteContent, LeadEntry, BlogPost } from '../lib/siteContent';
+import { fetchSiteContent, fetchLeads, loginAdmin, saveSiteContent, verifyToken, uploadFile, deleteLead, createLead, fetchBlogs, createBlog, updateBlog, deleteBlogPost } from '../lib/api';
 import { formatQuoteNumber, sanitizeFileName } from '../lib/quoteUtils';
+import { slugifyBlogTitle } from '../lib/blogUtils';
 
 const TOKEN_KEY = 'bolt_admin_token';
 
@@ -17,7 +18,7 @@ const SERVICE_NAMES = [
   'Furniture Assembly',
 ];
 
-type CropTarget = 'hero' | 'service' | 'whyUs';
+type CropTarget = 'hero' | 'service' | 'whyUs' | 'blog';
 
 interface PhotoToCrop {
   file: File;
@@ -116,7 +117,7 @@ export default function Admin() {
   const [showQuoteEditor, setShowQuoteEditor] = useState(false);
   const [quoteEditorStatus, setQuoteEditorStatus] = useState<string>('');
   const [lastLeadRefresh, setLastLeadRefresh] = useState<string>('');
-  const [editingBlog, setEditingBlog] = useState<Partial<LeadEntry> | null>(null);
+  const [editingBlog, setEditingBlog] = useState<Partial<BlogPost> | null>(null);
   const [showBlogEditor, setShowBlogEditor] = useState(false);
   const [uploadingBlogImage, setUploadingBlogImage] = useState(false);
   const [blogImageCrop, setBlogImageCrop] = useState<PhotoToCrop | null>(null);
@@ -146,7 +147,16 @@ export default function Admin() {
   const loadData = async (authToken: string) => {
     try {
       const [content, savedLeads] = await Promise.all([fetchSiteContent(), fetchLeads(authToken)]);
-      setSiteContent({ ...defaultSiteContent, ...content });
+      // also fetch blogs from API to prefer DB-backed posts
+      let blogs = content.blogPosts || [];
+      try {
+        const remoteBlogs = await fetchBlogs();
+        if (Array.isArray(remoteBlogs) && remoteBlogs.length > 0) blogs = remoteBlogs;
+      } catch (err) {
+        // ignore remote blog fetch errors and fall back to content.blogPosts
+      }
+
+      setSiteContent({ ...defaultSiteContent, ...content, blogPosts: blogs });
       setLeads(savedLeads);
     } catch (error) {
       console.error('Failed to load admin data', error);
@@ -289,7 +299,6 @@ export default function Admin() {
   const uploadCroppedImage = async () => {
     if (!photoToCrop || !croppedAreaPixels) return;
     const { file, previewUrl, target, index } = photoToCrop;
-
     try {
       const croppedBlob = await getCroppedImg(previewUrl, croppedAreaPixels);
       const croppedFile = new File([croppedBlob], file.name, { type: croppedBlob.type });
@@ -298,27 +307,42 @@ export default function Admin() {
         setUploadingHero(true);
       } else if (target === 'whyUs') {
         setUploadingWhyUs(true);
+      } else if (target === 'blog') {
+        setUploadingBlogImage(true);
       } else {
         setUploadingService(index ?? 0);
       }
 
       const url = await uploadFile(croppedFile, token);
-      const updatedContent = target === 'hero'
-        ? { ...siteContent, heroBgImage: url }
-        : target === 'whyUs'
-          ? { ...siteContent, whyUsImage: url }
-          : (() => {
-              const serviceImages = [...siteContent.serviceImages];
-              if (typeof index === 'number') {
-                serviceImages[index] = url;
-              }
-              return { ...siteContent, serviceImages };
-            })();
+      let updatedContent;
+      if (target === 'blog') {
+        // set preview on editingBlog and locally in siteContent.blogPosts
+        const updatedEditing = editingBlog ? { ...editingBlog, image: url } : null;
+        setEditingBlog(updatedEditing as any);
+        const previewBlogs = [...siteContent.blogPosts];
+        const idx = previewBlogs.findIndex((b) => b.id === (editingBlog?.id));
+        if (idx >= 0) previewBlogs[idx] = { ...previewBlogs[idx], image: url };
+        updatedContent = { ...siteContent, blogPosts: previewBlogs };
+      } else {
+        updatedContent = target === 'hero'
+          ? { ...siteContent, heroBgImage: url }
+          : target === 'whyUs'
+            ? { ...siteContent, whyUsImage: url }
+            : (() => {
+                const serviceImages = [...siteContent.serviceImages];
+                if (typeof index === 'number') serviceImages[index] = url;
+                return { ...siteContent, serviceImages };
+              })();
+      }
 
       setSiteContent(updatedContent);
       try {
-        await saveSiteContent(updatedContent, token);
-        setSaveStatus('Image uploaded and saved successfully.');
+        if (target !== 'blog') {
+          await saveSiteContent(updatedContent, token);
+          setSaveStatus('Image uploaded and saved successfully.');
+        } else {
+          setSaveStatus('Image uploaded. Save the blog to persist.');
+        }
       } catch (saveError) {
         setSaveStatus('Image uploaded, but failed to save content.');
       }
@@ -331,6 +355,7 @@ export default function Admin() {
       setUploadingHero(false);
       setUploadingWhyUs(false);
       setUploadingService(null);
+      setUploadingBlogImage(false);
       resetCrop();
     }
   };
@@ -614,8 +639,10 @@ export default function Admin() {
         id: 'blog-' + Date.now(),
         title: '',
         excerpt: '',
+        content: '',
         image: '',
         category: 'Moving Tips',
+        slug: '',
       });
     }
     setShowBlogEditor(true);
@@ -624,7 +651,7 @@ export default function Admin() {
   const handleBlogBlogImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    prepareCrop(file, 'service', 0);
+    prepareCrop(file, 'blog');
   };
 
   const saveBlog = async () => {
@@ -634,23 +661,23 @@ export default function Admin() {
     }
 
     try {
-      const blogIndex = siteContent.blogPosts.findIndex((b) => b.id === editingBlog.id);
-      const updatedBlogs = [...siteContent.blogPosts];
-      
-      if (blogIndex >= 0) {
-        updatedBlogs[blogIndex] = editingBlog as any;
+      if (!token) throw new Error('Login required to save blog');
+
+      if (String(editingBlog.id).startsWith('blog-')) {
+        // create via API
+        const created = await createBlog(editingBlog, token);
+        setSaveStatus('Blog created successfully.');
       } else {
-        updatedBlogs.push(editingBlog as any);
+        await updateBlog(editingBlog.id as any, editingBlog, token);
+        setSaveStatus('Blog updated successfully.');
       }
 
-      const updatedContent = { ...siteContent, blogPosts: updatedBlogs };
-      setSiteContent(updatedContent);
-      await saveSiteContent(updatedContent, token);
-      
+      // refresh blog list from backend
+      const blogs = await fetchBlogs();
+      setSiteContent((current) => ({ ...current, blogPosts: blogs }));
       setShowBlogEditor(false);
       setEditingBlog(null);
       setSavedAt(new Date().toLocaleString());
-      setSaveStatus('Blog saved successfully.');
     } catch (error) {
       setSaveStatus('Failed to save blog.');
     }
@@ -660,11 +687,12 @@ export default function Admin() {
     if (!window.confirm('Are you sure you want to delete this blog post?')) return;
 
     try {
-      const updatedBlogs = siteContent.blogPosts.filter((b) => b.id !== blogId);
-      const updatedContent = { ...siteContent, blogPosts: updatedBlogs };
-      setSiteContent(updatedContent);
-      await saveSiteContent(updatedContent, token);
-      
+      if (token && !String(blogId).startsWith('blog-')) {
+        await deleteBlogPost(blogId, token);
+      }
+
+      const blogs = await fetchBlogs();
+      setSiteContent((current) => ({ ...current, blogPosts: blogs }));
       setSavedAt(new Date().toLocaleString());
       setSaveStatus('Blog deleted successfully.');
     } catch (error) {
@@ -1118,72 +1146,70 @@ const generateQuoteTemplate = async (lead: QuoteDraft) => {
               </div>
 
               {activeSection === 'hero' && (
-                <div className="grid gap-4">
-                  <label className="block">
-                    <span className="text-sm font-semibold text-gray-700">Headline</span>
-                    <textarea
-                      rows={3}
-                      value={siteContent.heroHeadline}
-                      onChange={(e) => handleFieldChange('heroHeadline', e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-gray-200 p-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                    />
-                  </label>
-                  <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-4">
                     <label className="block">
-                      <span className="text-sm font-semibold text-gray-700">Highlight Text</span>
-                      <input
-                        type="text"
-                        value={siteContent.heroHighlight}
-                        onChange={(e) => handleFieldChange('heroHighlight', e.target.value)}
+                      <span className="text-sm font-semibold text-gray-700">Headline</span>
+                      <textarea
+                        rows={3}
+                        value={siteContent.heroHeadline}
+                        onChange={(e) => handleFieldChange('heroHeadline', e.target.value)}
                         className="mt-2 w-full rounded-2xl border border-gray-200 p-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
                       />
                     </label>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <label className="block">
+                        <span className="text-sm font-semibold text-gray-700">Highlight Text</span>
+                        <input
+                          type="text"
+                          value={siteContent.heroHighlight}
+                          onChange={(e) => handleFieldChange('heroHighlight', e.target.value)}
+                          className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="text-sm font-semibold text-gray-700">CTA Button</span>
+                        <input
+                          type="text"
+                          value={siteContent.heroCTA}
+                          onChange={(e) => handleFieldChange('heroCTA', e.target.value)}
+                          className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                        />
+                      </label>
+                    </div>
+
                     <label className="block">
-                      <span className="text-sm font-semibold text-gray-700">CTA Button</span>
-                      <input
-                        type="text"
-                        value={siteContent.heroCTA}
-                        onChange={(e) => handleFieldChange('heroCTA', e.target.value)}
+                      <span className="text-sm font-semibold text-gray-700">Subtext</span>
+                      <textarea
+                        rows={4}
+                        value={siteContent.heroSubtext}
+                        onChange={(e) => handleFieldChange('heroSubtext', e.target.value)}
                         className="mt-2 w-full rounded-2xl border border-gray-200 p-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
                       />
                     </label>
                   </div>
-                  <label className="block">
-                    <span className="text-sm font-semibold text-gray-700">Subtext</span>
-                    <textarea
-                      rows={4}
-                      value={siteContent.heroSubtext}
-                      onChange={(e) => handleFieldChange('heroSubtext', e.target.value)}
-                      className="mt-2 w-full rounded-2xl border border-gray-200 p-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-sm font-semibold text-gray-700">Background Image</span>
-                    <div className="mt-2 flex flex-col gap-3">
-                      {siteContent.heroBgImage && (
-                        <div className="relative w-full h-32 rounded-2xl overflow-hidden border border-gray-200">
-                          <img
-                            src={siteContent.heroBgImage}
-                            alt="Hero background"
-                            className="w-full h-full object-cover"
-                          />
+
+                  <div className="space-y-4">
+                    <span className="text-sm font-semibold text-gray-700">Background Image & Preview</span>
+                    <div className="w-full rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 p-4">
+                      {siteContent.heroBgImage ? (
+                        <div className="relative w-full h-48 rounded-xl overflow-hidden mb-3">
+                          <img src={siteContent.heroBgImage} alt="Hero background" className="w-full h-full object-cover" />
                         </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-48 text-gray-400">No image set</div>
                       )}
-                      <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border-2 border-dashed border-amber-300 bg-amber-50 cursor-pointer hover:bg-amber-100 transition-colors">
+
+                      <label className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-dashed border-amber-300 bg-white cursor-pointer hover:bg-amber-50 transition-colors">
                         <Upload className="w-5 h-5 text-amber-600" />
-                        <span className="text-sm font-semibold text-amber-700">
-                          {uploadingHero ? 'Uploading...' : 'Upload Image'}
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleHeroImageUpload}
-                          disabled={uploadingHero}
-                          className="hidden"
-                        />
+                        <span className="text-sm font-semibold text-amber-700">{uploadingHero ? 'Uploading...' : 'Upload Image'}</span>
+                        <input type="file" accept="image/*" onChange={handleHeroImageUpload} disabled={uploadingHero} className="hidden" />
                       </label>
+
+                      <div className="mt-3 text-xs text-gray-500">Preview will update after upload. Use a wide image for best results.</div>
                     </div>
-                  </label>
+                  </div>
                 </div>
               )}
 
@@ -1864,7 +1890,7 @@ const generateQuoteTemplate = async (lead: QuoteDraft) => {
                   <input
                     type="text"
                     value={editingBlog.title || ''}
-                    onChange={(e) => setEditingBlog({ ...editingBlog, title: e.target.value })}
+                    onChange={(e) => setEditingBlog({ ...editingBlog, title: e.target.value, slug: editingBlog.slug || slugifyBlogTitle(e.target.value) })}
                     className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
                     placeholder="Blog post title"
                   />
@@ -1878,6 +1904,28 @@ const generateQuoteTemplate = async (lead: QuoteDraft) => {
                     onChange={(e) => setEditingBlog({ ...editingBlog, excerpt: e.target.value })}
                     className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
                     placeholder="Brief description of the blog post"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">Full Content</span>
+                  <textarea
+                    rows={8}
+                    value={editingBlog.content || ''}
+                    onChange={(e) => setEditingBlog({ ...editingBlog, content: e.target.value })}
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                    placeholder="Full article content shown on the blog details page"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">Slug</span>
+                  <input
+                    type="text"
+                    value={editingBlog.slug || ''}
+                    onChange={(e) => setEditingBlog({ ...editingBlog, slug: e.target.value.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-') })}
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                    placeholder="unique-post-slug"
                   />
                 </label>
 

@@ -20,8 +20,11 @@ export interface BlogPost {
   id: string;
   title: string;
   excerpt: string;
+  content?: string;
   image: string;
   category: string;
+  slug?: string;
+  publishedAt?: string;
   url?: string;
 }
 
@@ -49,14 +52,13 @@ export interface SiteContent {
 export const defaultSiteContent: SiteContent = {
   siteName: 'Boxed With Care Movers',
   siteTagline: 'MOVERS & PACKERS',
-  heroHeadline: 'Moving Made\nSimple,\nSafe & Stress-Free',
-  heroHighlight: 'Simple,',
+  heroHeadline: "Moving Shouldn't Be Stressful.",
+  heroHighlight: '',
   heroSubtext:
-    'Professional residential and commercial moving services for local and regional relocations. We handle your belongings with the care they deserve — every box, every step of the way.',
+    'Professional movers delivering reliable residential and commercial relocation services with care and precision.',
   heroCTA: 'Get a Free Quote',
-  heroCallText: 'Call Us Now',
-  heroBgImage:
-    'https://images.pexels.com/photos/4246119/pexels-photo-4246119.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  heroCallText: 'View Services',
+  heroBgImage: '',
   whyUsImage:
     'https://images.pexels.com/photos/4246121/pexels-photo-4246121.jpeg?auto=compress&cs=tinysrgb&w=800',
   phone: '+254 748 851 679',
@@ -79,25 +81,28 @@ export const defaultSiteContent: SiteContent = {
       id: 'moving-checklist',
       title: 'The Essential Moving Checklist for Every Home',
       excerpt: 'A practical moving checklist to keep your relocation organized from first box to final unpacking. Prepare smarter, move easier, and avoid last-minute stress.',
+      content: 'A practical moving checklist can remove the guesswork from moving day. Start by labeling boxes by room, pack essential documents separately, and keep fragile items cushioned with soft materials. Confirm access at both locations, reserve elevator time if needed, and prepare a small essentials bag with chargers, toiletries, and a change of clothes. On moving day, load the heaviest items first, keep pathways clear, and do a final walkthrough before handing over the keys. The goal is to reduce stress and make the transition feel controlled from the first box to the last.',
       image: 'https://images.pexels.com/photos/5849141/pexels-photo-5849141.jpeg?auto=compress&cs=tinysrgb&w=1200',
       category: 'Moving Tips',
-      url: '#contact',
+      slug: 'essential-moving-checklist',
     },
     {
       id: 'packing-hacks',
       title: 'Packing Hacks That Protect Fragile Belongings',
       excerpt: 'Discover clever packing strategies to safeguard fragile items and valuables during transport. Learn what materials work best and where to apply them.',
+      content: 'Protecting fragile belongings starts with the right materials and a consistent packing system. Use double-walled boxes for heavier fragile items, wrap each piece individually, and fill empty space so items cannot shift. Stack plates vertically, use towels or paper to cushion gaps, and clearly mark boxes as fragile on multiple sides. Keep glass, ceramics, and electronics away from moisture and heat, and load them last so they are handled with care during unloading. A little extra organization prevents expensive breakage and gives you peace of mind.',
       image: 'https://images.pexels.com/photos/6841809/pexels-photo-6841809.jpeg?auto=compress&cs=tinysrgb&w=1200',
       category: 'Packing',
-      url: '#contact',
+      slug: 'packing-hacks-fragile-belongings',
     },
     {
       id: 'moving-costs',
       title: 'How to Estimate Moving Costs for Your Budget',
       excerpt: 'Understand the key factors that shape moving costs so you can budget confidently and avoid surprises. From distance to service levels, here is what matters.',
+      content: 'Moving costs usually depend on a mix of distance, volume, labor, access, and timing. Local moves often focus on hourly labor, while longer moves may factor in mileage, fuel, and packing support. If your property has stairs, tight corners, or limited parking, plan for more handling time. Full-service packing, specialty item handling, and last-minute scheduling can also increase the final total. The best way to budget is to request a clear estimate, compare what is included, and keep a small buffer for unexpected needs.',
       image: 'https://images.pexels.com/photos/7045559/pexels-photo-7045559.jpeg?auto=compress&cs=tinysrgb&w=1200',
       category: 'Planning',
-      url: '#contact',
+      slug: 'estimate-moving-costs-budget',
     },
   ],
   defaultTerms: [

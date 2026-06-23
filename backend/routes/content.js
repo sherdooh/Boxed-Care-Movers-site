@@ -7,7 +7,7 @@ const router = express.Router();
 // Helper: Fetch all content
 const fetchContentAsObject = async () => {
     const result = await pool.query('SELECT "key", value FROM site_content');
-    return result.rows.reduce((acc, row) => {
+    const raw = result.rows.reduce((acc, row) => {
         try {
             acc[row.key] = JSON.parse(row.value);
         } catch {
@@ -15,6 +15,31 @@ const fetchContentAsObject = async () => {
         }
         return acc;
     }, {});
+
+    const site = raw.site && typeof raw.site === 'object' ? raw.site : {};
+    return {
+        ...site,
+        ...raw,
+    };
+};
+
+const fetchBlogPosts = async () => {
+    const result = await pool.query(
+        'SELECT id, title, excerpt, content, image_url, category, slug, published_at, created_at, updated_at FROM blog_posts ORDER BY published_at DESC NULLS LAST, created_at DESC'
+    );
+
+    return result.rows.map((row) => ({
+        id: String(row.id),
+        title: row.title,
+        excerpt: row.excerpt || '',
+        content: row.content || '',
+        image: row.image_url || '',
+        category: row.category || '',
+        slug: row.slug || '',
+        publishedAt: row.published_at,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+    }));
 };
 
 // Helper: Save content
@@ -23,7 +48,7 @@ const saveContentObject = async (contentObject) => {
     try {
         await client.query('BEGIN');
         for (const [key, value] of Object.entries(contentObject)) {
-            const valueToStore = typeof value === 'object' ? JSON.stringify(value) : value;
+            const valueToStore = JSON.stringify(value);
             await client.query(
                 'INSERT INTO site_content ("key", value) VALUES ($1, $2) ON CONFLICT ("key") DO UPDATE SET value = EXCLUDED.value',
                 [key, valueToStore]
@@ -42,6 +67,12 @@ const saveContentObject = async (contentObject) => {
 router.get('/', async (req, res, next) => {
     try {
         const content = await fetchContentAsObject();
+        try {
+            content.blogPosts = await fetchBlogPosts();
+        } catch (blogErr) {
+            console.warn('Failed to fetch blog posts, falling back to empty list:', blogErr.message);
+            content.blogPosts = content.blogPosts || [];
+        }
         res.json(content);
     } catch (err) {
         console.error('Error fetching content:', err);

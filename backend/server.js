@@ -34,6 +34,7 @@ app.use('/api/login', require('./routes/login'));
 app.use('/api/me', require('./routes/me'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/google-reviews', require('./routes/googleReviews'));
+app.use('/api/blogs', require('./routes/blogs'));
 
 // 404 handler
 app.use((req, res) => {

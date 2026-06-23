@@ -1,4 +1,5 @@
-import { LeadEntry, SiteContent } from './siteContent';
+import { BlogPost, LeadEntry, SiteContent } from './siteContent';
+import { slugifyBlogTitle } from './blogUtils';
 
 export interface GoogleReview {
   id: string;
@@ -12,6 +13,33 @@ export interface GoogleReview {
 
 const API_BASE = import.meta.env.VITE_API_URL || 'https://boxed-care-movers-backend.vercel.app';
 
+function normalizeContent(content: any): SiteContent {
+  if (content && typeof content === 'object' && content.site && typeof content.site === 'object') {
+    const normalizedBlogs = Array.isArray(content.blogPosts)
+      ? content.blogPosts.map((post: any) => ({
+          ...post,
+          slug: post.slug || slugifyBlogTitle(post.title || ''),
+        }))
+      : content.blogPosts;
+
+    return {
+      ...content.site,
+      ...content,
+      blogPosts: normalizedBlogs,
+    };
+  }
+  if (content && Array.isArray(content.blogPosts)) {
+    return {
+      ...content,
+      blogPosts: content.blogPosts.map((post: any) => ({
+        ...post,
+        slug: post.slug || slugifyBlogTitle(post.title || ''),
+      })),
+    };
+  }
+  return content;
+}
+
 async function parseResponse(response: Response) {
   const text = await response.text();
   if (!response.ok) {
@@ -22,7 +50,8 @@ async function parseResponse(response: Response) {
 
 export async function fetchSiteContent(): Promise<SiteContent> {
   const response = await fetch(`${API_BASE}/api/content`);
-  return parseResponse(response);
+  const content = await parseResponse(response);
+  return normalizeContent(content);
 }
 
 export async function saveSiteContent(content: SiteContent, token: string): Promise<SiteContent> {
@@ -93,6 +122,61 @@ export async function uploadFile(file: File, token: string): Promise<string> {
 
 export async function deleteLead(leadId: string, token: string): Promise<void> {
   const response = await fetch(`${API_BASE}/api/leads/${leadId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  await parseResponse(response);
+}
+
+export async function fetchBlogs(): Promise<BlogPost[]> {
+  const response = await fetch(`${API_BASE}/api/blogs`);
+  const blogs = await parseResponse(response);
+  return Array.isArray(blogs)
+    ? blogs.map((post: any) => ({
+        ...post,
+        slug: post.slug || slugifyBlogTitle(post.title || ''),
+      }))
+    : [];
+}
+
+export async function createBlog(blog: Partial<BlogPost> & { content?: string }, token: string): Promise<any> {
+  const payload = {
+    ...blog,
+    image_url: (blog as any).image_url || blog.image || '',
+  };
+
+  const response = await fetch(`${API_BASE}/api/blogs`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return parseResponse(response);
+}
+
+export async function updateBlog(id: number | string, blog: Partial<BlogPost> & { content?: string }, token: string): Promise<any> {
+  const payload = {
+    ...blog,
+    image_url: (blog as any).image_url || blog.image || '',
+  };
+
+  const response = await fetch(`${API_BASE}/api/blogs/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  return parseResponse(response);
+}
+
+export async function deleteBlogPost(id: number | string, token: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/api/blogs/${id}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
