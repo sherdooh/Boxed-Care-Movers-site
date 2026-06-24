@@ -7,47 +7,53 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import { fetchGoogleReviews, GoogleReview } from '../../lib/api';
 
-// Fallback static testimonials (Kenyan)
+// Helper to generate avatar URL from name
+const getAvatarUrl = (name: string) => {
+  const encoded = encodeURIComponent(name);
+  return `https://ui-avatars.com/api/?name=${encoded}&background=random&size=64&font-size=0.33`;
+};
+
+// Fallback static testimonials with Kenyan names – using avatars
 const fallbackTestimonials = [
   {
     name: 'Amina K.',
     role: 'Verified Customer',
-    avatar: 'https://images.pexels.com/photos/3778610/pexels-photo-3778610.jpeg?auto=compress&cs=tinysrgb&w=200',
+    avatar: getAvatarUrl('Amina K.'),
     rating: 5,
     text: 'Absolutely fantastic service. The crew arrived on time, packed everything carefully, and unloaded with the same attention to detail. Best movers we have ever used.',
   },
   {
     name: 'Joseph M.',
     role: 'Homeowner',
-    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200',
+    avatar: getAvatarUrl('Joseph M.'),
     rating: 5,
     text: 'I booked them for a long-distance move and everything went smoothly. Great communication, no hidden fees, and all my furniture arrived in perfect condition.',
   },
   {
     name: 'Aisha K.',
     role: 'Apartment Renter',
-    avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200',
+    avatar: getAvatarUrl('Aisha K.'),
     rating: 5,
     text: 'Their packing service was excellent. They handled my fragile items with care and were very respectful in my home. Highly recommend for any move.',
   },
   {
     name: 'Peter Ouma',
     role: 'Small Business Owner',
-    avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=200',
+    avatar: getAvatarUrl('Peter Ouma'),
     rating: 5,
     text: 'The team made our office relocation effortless. Fast, efficient, and professional from start to finish. They even helped us set up in the new space.',
   },
   {
     name: 'Ruth W.',
     role: 'Returning Client',
-    avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200',
+    avatar: getAvatarUrl('Ruth W.'),
     rating: 5,
     text: 'Every detail was handled with care. I felt confident the whole day because they kept me informed and treated my belongings like their own.',
   },
   {
     name: 'Daniel T.',
     role: 'Customer',
-    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200',
+    avatar: getAvatarUrl('Daniel T.'),
     rating: 5,
     text: 'Great value for money. The movers were courteous, strong, and careful. My move was stress-free thanks to Boxed With Care Movers.',
   },
@@ -93,13 +99,14 @@ export default function Testimonials() {
     };
   }, []);
 
-  // Build cards from Google reviews or fallback
+  // Build cards from Google reviews (using avatar generator) or fallback
   const cards: TestimonialCard[] = reviews && reviews.length > 0
     ? reviews.map((review) => ({
         id: review.id,
         name: review.authorName,
         role: review.relativeTimeDescription || 'Google review',
-        avatar: review.profilePhotoUrl || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200',
+        // Use generated avatar instead of profilePhotoUrl
+        avatar: getAvatarUrl(review.authorName),
         rating: review.rating,
         text: review.text,
         source: 'google',
@@ -194,12 +201,13 @@ export default function Testimonials() {
                       {t.source === 'google' ? '⭐ Google Review' : '✓ Verified Customer'}
                     </p>
                     
-                    {/* Author */}
+                    {/* Author with avatar */}
                     <div className="mt-4 flex items-center gap-3 pt-4 border-t border-gray-100">
                       <img
                         src={t.avatar}
                         alt={t.name}
-                        className="w-10 h-10 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover bg-amber-100"
+                        loading="lazy"
                       />
                       <div>
                         <p className="font-bold text-gray-900 text-sm">{t.name}</p>
