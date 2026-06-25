@@ -6,7 +6,7 @@ import './styles/index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <HelmetProvider>   {/* ✅ NEW: enables SEO meta tags */}
+    <HelmetProvider>   {/* enables SEO meta tags */}
       <App />
     </HelmetProvider>
   </StrictMode>
