@@ -146,18 +146,44 @@ function App() {
     );
   }
 
-  // Main app rendering
+  // ============================================================
+  // MAIN APP RENDERING (HOMEPAGE)
+  // ============================================================
   return (
     <>
-      <Helmet>
-        <title>{content.siteName} – Professional Moving Services</title>
-        <meta name="description" content={content.heroSubtext} />
-        <meta name="keywords" content="moving, packing, relocation, Nairobi, Kenya" />
-        <link rel="canonical" href="https://boxedwithcare.co.ke" />
-      </Helmet>
+      {/* ============================================================
+          SEO + SOCIAL SHARING META TAGS (Homepage)
+          ============================================================ */}
+ <Helmet>
+  {/* Basic SEO */}
+  <title>{content.siteName} – Professional Moving Services in Kenya</title>
+  <meta name="description" content={content.heroSubtext} />
+  <meta name="keywords" content="movers Nairobi, packing services Kenya, relocation Nairobi, moving company Kenya" />
+  <link rel="canonical" href="https://boxedwithcare.co.ke" />
+
+  {/* Open Graph */}
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://boxedwithcare.co.ke" />
+  <meta property="og:title" content={`${content.siteName} – Professional Moving Services in Kenya`} />
+  <meta property="og:description" content={content.heroSubtext} />
+  <meta property="og:image" content="https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/social-share.PNG" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:alt" content="Boxed With Care Movers – Professional Moving Services in Kenya" />
+  <meta property="og:site_name" content={content.siteName} />
+
+  {/* Twitter Card */}
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={`${content.siteName} – Professional Moving Services`} />
+  <meta name="twitter:description" content={content.heroSubtext} />
+  <meta name="twitter:image" content="https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/social-share.PNG" />
+
+  {/* Theme */}
+  <meta name="theme-color" content="#f59e0b" />
+</Helmet>
 
       <div className="min-h-screen bg-white">
-        {/* Header with individual props */}
         <Header
           scrolled={scrolled}
           siteName={content.siteName}
@@ -174,7 +200,6 @@ function App() {
         <Blog content={content} />
         <QuoteForm content={content} />
 
-        {/* Footer with individual props */}
         <Footer
           siteName={content.siteName}
           siteTagline={content.siteTagline}
