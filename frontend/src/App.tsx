@@ -150,32 +150,10 @@ function App() {
   return (
     <>
       <Helmet>
-        {/* Basic Meta Tags */}
-        <title>{content.siteName} – Professional Moving Services in Kenya</title>
+        <title>{content.siteName} – Professional Moving Services</title>
         <meta name="description" content={content.heroSubtext} />
         <meta name="keywords" content="moving, packing, relocation, Nairobi, Kenya" />
         <link rel="canonical" href="https://boxedwithcare.co.ke" />
-
-        {/* Open Graph / Facebook / WhatsApp / Social Sharing */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://boxedwithcare.co.ke" />
-        <meta property="og:title" content={content.siteName} />
-        <meta property="og:description" content={content.heroSubtext} />
-        
-        {/* ✅ YOUR SOCIAL SHARE IMAGE */}
-        <meta property="og:image" content="https://cdn.imgtree.co/images/7bqdFNKA.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content={`${content.siteName} - Professional Moving Services in Kenya`} />
-
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={content.siteName} />
-        <meta name="twitter:description" content={content.heroSubtext} />
-        <meta name="twitter:image" content="https://cdn.imgtree.co/images/7bqdFNKA.png" />
-
-        {/* Theme Color */}
-        <meta name="theme-color" content="#f59e0b" />
       </Helmet>
 
       <div className="min-h-screen bg-white">

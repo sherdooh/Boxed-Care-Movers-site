@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://boxedwithcare.co.ke/sitemap.xml

@@ -4,6 +4,9 @@ import Footer from '../layout/Footer';
 import { SiteContent, BlogPost } from '../../lib/siteContent';
 import { estimateReadingTime, slugifyBlogTitle, splitIntoParagraphs } from '../../lib/blogUtils';
 
+
+
+
 interface BlogDetailsProps {
   content: SiteContent;
   post: BlogPost;
@@ -229,7 +232,16 @@ export default function BlogDetails({ content, post, posts }: BlogDetailsProps) 
         </section>
       </main>
 
-      <Footer content={content} />
+      {/* <Footer content={content} /> */}
+
+      <Footer
+  siteName={content.siteName}
+  siteTagline={content.siteTagline}
+  phone={content.phone}
+  email={content.email}
+  footerText={content.footerText}
+  logoUrl={content.logoUrl}
+/>
     </div>
   );
 }
