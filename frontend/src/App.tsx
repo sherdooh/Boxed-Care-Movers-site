@@ -13,37 +13,27 @@ import { defaultSiteContent } from './lib/siteContent';
 import { fetchSiteContent } from './lib/api';
 import { slugifyBlogTitle } from './lib/blogUtils';
 
-// ============================================================
-// 1. Lazy load Admin (code splitting) – improves initial load
-//    Install: none (built-in React)
-// ============================================================
+// Lazy load Admin
 const Admin = lazy(() => import('./pages/Admin'));
 
-// ============================================================
-// 2. Optional: AOS for scroll animations (install with npm i aos)
-//    Uncomment the two imports below if you install AOS
-// ============================================================
+// AOS & Helmet imports
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-
-// ============================================================
-// 3. Optional: SEO meta tags (install with npm i react-helmet-async)
-//    Uncomment the import below if you install Helmet
-// ============================================================
 import { Helmet } from 'react-helmet-async';
 
 function App() {
   const [scrolled, setScrolled] = useState(false);
   const [content, setContent] = useState(defaultSiteContent);
-  const [loading, setLoading] = useState(true); // ✅ NEW: loading state
+  const [loading, setLoading] = useState(true);
 
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
-  const isAdmin =
-    typeof window !== 'undefined' &&
-    window.location.pathname.startsWith('/admin');
+  const isAdmin = currentPath.startsWith('/admin');
   const isBlogDetailsRoute = currentPath.startsWith('/blog/');
-  const blogSlug = isBlogDetailsRoute ? decodeURIComponent(currentPath.split('/').filter(Boolean)[1] || '') : '';
+  const blogSlug = isBlogDetailsRoute
+    ? decodeURIComponent(currentPath.split('/').filter(Boolean)[1] || '')
+    : '';
 
+  // Cookie helpers
   const getCookie = (name: string) =>
     document.cookie.split('; ').find((cookie) => cookie.startsWith(`${name}=`))?.split('=')[1] || '';
 
@@ -59,12 +49,10 @@ function App() {
     return `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
   };
 
-  // ------------------------------------------------------------
   // Load content & set visitor cookies
-  // ------------------------------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined' || isAdmin) {
-      setLoading(false); 
+      setLoading(false);
       return;
     }
 
@@ -87,62 +75,58 @@ function App() {
     loadContent();
   }, [isAdmin]);
 
-  // ------------------------------------------------------------
-  // Handle header scroll effect
-  // ------------------------------------------------------------
+  // Scroll effect for header
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ------------------------------------------------------------
-  // Optional: AOS initialization
-  // ------------------------------------------------------------
+  // AOS initialization
   useEffect(() => {
     if (!isAdmin) {
       AOS.init({
         duration: 800,
         once: true,
-        easing: 'ease-out-cubic'
+        easing: 'ease-out-cubic',
       });
     }
-  }, [isAdmin, content]); // Re-run after content loads
+  }, [isAdmin, content]);
 
+  // Blog data
   const blogPosts = content.blogPosts.length ? content.blogPosts : defaultSiteContent.blogPosts;
   const activeBlogPost = blogSlug
     ? blogPosts.find((post) => (post.slug || slugifyBlogTitle(post.title)) === blogSlug)
     : null;
 
-  // ------------------------------------------------------------
-  // Admin route – lazy loaded with Suspense
-  // ------------------------------------------------------------
+  // Admin route (lazy loaded)
   if (isAdmin) {
     return (
-      <Suspense fallback={
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-500 border-t-transparent"></div>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-500 border-t-transparent" />
+          </div>
+        }
+      >
         <Admin />
       </Suspense>
     );
   }
 
-  // ------------------------------------------------------------
-  // Loading state while content fetches
-  // ------------------------------------------------------------
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-500 border-t-transparent mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-500 border-t-transparent mx-auto" />
           <p className="mt-4 text-gray-600">Loading site content…</p>
         </div>
       </div>
     );
   }
 
+  // Blog detail page
   if (isBlogDetailsRoute) {
     if (activeBlogPost) {
       return <BlogDetails content={content} post={activeBlogPost} posts={blogPosts} />;
@@ -162,14 +146,9 @@ function App() {
     );
   }
 
-  // ------------------------------------------------------------
   // Main app rendering
-  // ------------------------------------------------------------
   return (
     <>
-      {/* ============================================================
-          SEO Meta Tags (optional – uncomment if react-helmet-async is installed)
-          ============================================================ */}
       <Helmet>
         <title>{content.siteName} – Professional Moving Services</title>
         <meta name="description" content={content.heroSubtext} />
@@ -178,12 +157,15 @@ function App() {
       </Helmet>
 
       <div className="min-h-screen bg-white">
+        {/* ✅ UPDATED: Header with individual props */}
         <Header
           scrolled={scrolled}
           siteName={content.siteName}
           siteTagline={content.siteTagline}
           phone={content.phone}
+          logoUrl={content.logoUrl}
         />
+
         <Hero content={content} />
         <Services content={content} />
         <WhyUs content={content} />
@@ -191,22 +173,27 @@ function App() {
         <Testimonials />
         <Blog content={content} />
         <QuoteForm content={content} />
-        <Footer content={content} />
+
+        {/* ✅ UPDATED: Footer with individual props */}
+        <Footer
+          siteName={content.siteName}
+          siteTagline={content.siteTagline}
+          phone={content.phone}
+          email={content.email}
+          footerText={content.footerText}
+          logoUrl={content.logoUrl}
+        />
       </div>
 
-      {/* ============================================================
-          Floating WhatsApp Button (safe, no state)
-          ============================================================ */}
+      {/* Floating WhatsApp Button */}
       <WhatsAppButton phone={content.phone} />
     </>
   );
 }
 
-// ============================================================
-// Separate component for WhatsApp – no effect on existing logic
-// ============================================================
+// WhatsApp Button component
 function WhatsAppButton({ phone }: { phone?: string }) {
-  const whatsappNumber = phone?.replace(/\D/g, '') || '254748851679';   
+  const whatsappNumber = phone?.replace(/\D/g, '') || '254748851679';
   const message = 'Hi%20I%20need%20a%20moving%20quote';
   const href = `https://wa.me/${whatsappNumber}?text=${message}`;
 

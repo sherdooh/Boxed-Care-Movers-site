@@ -29,6 +29,7 @@ export interface BlogPost {
 }
 
 export interface SiteContent {
+  logoUrl: string; 
   siteName: string;
   siteTagline: string;
   heroHeadline: string;
@@ -50,6 +51,7 @@ export interface SiteContent {
 }
 
 export const defaultSiteContent: SiteContent = {
+  logoUrl: 'https://api.logo.com/api/v2/images?design=lg_d1DEsp1pTfdP72idQg&u=1782369975254&width=300&height=300&margins=50&fit=contain&format=webp&quality=80&tightBounds=true',
   siteName: 'Boxed With Care Movers',
   siteTagline: 'MOVERS & PACKERS',
   heroHeadline: "Moving Shouldn't Be Stressful.",
