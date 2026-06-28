@@ -12,6 +12,7 @@ import Footer from './components/layout/Footer';
 import { defaultSiteContent } from './lib/siteContent';
 import { fetchSiteContent } from './lib/api';
 import { slugifyBlogTitle } from './lib/blogUtils';
+import AIChatbot from './components/sections/AIChatbot';
 
 // Lazy load Admin
 const Admin = lazy(() => import('./pages/Admin'));
@@ -211,7 +212,10 @@ function App() {
       </div>
 
       {/* Floating WhatsApp Button */}
+
       <WhatsAppButton phone={content.phone} />
+      <AIChatbot />
+      
     </>
   );
 }

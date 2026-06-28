@@ -36,6 +36,8 @@ app.use('/api/upload', require('./routes/upload'));
 app.use('/api/google-reviews', require('./routes/googleReviews'));
 app.use('/api/blogs', require('./routes/blogs'));
 app.use('/sitemap.xml', require('./routes/sitemap'));
+// backend/server.js 
+app.use('/api/ai', require('./routes/ai'));
 
 // 404 handler
 app.use((req, res) => {
