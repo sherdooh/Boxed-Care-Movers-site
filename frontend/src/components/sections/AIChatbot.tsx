@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Send, MessageCircle, Loader2 } from 'lucide-react';
+import { API_BASE } from '../../lib/api'; // ✅ Import your base URL
 
 interface Message {
   id: string;
@@ -43,7 +44,8 @@ export default function AIChatbot() {
     setError('');
 
     try {
-      const response = await fetch('/api/ai/chat', {
+      // Uses API_BASE from api.ts
+      const response = await fetch(`${API_BASE}/api/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })

@@ -11,7 +11,9 @@ export interface GoogleReview {
   relativeTimeDescription?: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://boxed-care-movers-backend.vercel.app';
+// const API_BASE = import.meta.env.VITE_API_URL || 'https://boxed-care-movers-backend.vercel.app';
+
+export const API_BASE = import.meta.env.VITE_API_URL || 'https://boxed-care-movers-backend.vercel.app';
 
 function normalizeContent(content: any): SiteContent {
   if (content && typeof content === 'object' && content.site && typeof content.site === 'object') {
