@@ -84,7 +84,7 @@ export default function Footer({ siteName, siteTagline, phone, email, footerText
                   <img
                     src={logoUrl}
                     alt={`${siteName} logo`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-1"
                     onError={() => setLogoLoaded(false)}
                     width={44}
                     height={44}

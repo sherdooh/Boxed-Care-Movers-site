@@ -190,7 +190,7 @@ function App() {
           siteName={content.siteName}
           siteTagline={content.siteTagline}
           phone={content.phone}
-          logoUrl={content.logoUrl}
+          logoUrl={content.logoUrl || 'https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/logo.webp'}
         />
 
         <Hero content={content} />
@@ -207,7 +207,8 @@ function App() {
           phone={content.phone}
           email={content.email}
           footerText={content.footerText}
-          logoUrl={content.logoUrl}
+          logoUrl={content.logoUrl || 'https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/logo.webp'}
+          
         />
       </div>
 
