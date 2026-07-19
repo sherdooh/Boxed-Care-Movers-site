@@ -1,5 +1,7 @@
-import { BlogPost, LeadEntry, SiteContent } from './siteContent';
-import { slugifyBlogTitle } from './blogUtils';
+// api.ts – full updated version with all required functions
+
+import { BlogPost, LeadEntry, SiteContent } from "./siteContent";
+import { slugifyBlogTitle } from "./blogUtils";
 
 export interface GoogleReview {
   id: string;
@@ -11,16 +13,21 @@ export interface GoogleReview {
   relativeTimeDescription?: string;
 }
 
-// const API_BASE = import.meta.env.VITE_API_URL || 'https://boxed-care-movers-backend.vercel.app';
-
-export const API_BASE = import.meta.env.VITE_API_URL || 'https://boxed-care-movers-backend.vercel.app';
+export const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  "https://boxed-care-movers-backend.vercel.app";
 
 function normalizeContent(content: any): SiteContent {
-  if (content && typeof content === 'object' && content.site && typeof content.site === 'object') {
+  if (
+    content &&
+    typeof content === "object" &&
+    content.site &&
+    typeof content.site === "object"
+  ) {
     const normalizedBlogs = Array.isArray(content.blogPosts)
       ? content.blogPosts.map((post: any) => ({
           ...post,
-          slug: post.slug || slugifyBlogTitle(post.title || ''),
+          slug: post.slug || slugifyBlogTitle(post.title || ""),
         }))
       : content.blogPosts;
 
@@ -35,7 +42,7 @@ function normalizeContent(content: any): SiteContent {
       ...content,
       blogPosts: content.blogPosts.map((post: any) => ({
         ...post,
-        slug: post.slug || slugifyBlogTitle(post.title || ''),
+        slug: post.slug || slugifyBlogTitle(post.title || ""),
       })),
     };
   }
@@ -45,7 +52,7 @@ function normalizeContent(content: any): SiteContent {
 async function parseResponse(response: Response) {
   const text = await response.text();
   if (!response.ok) {
-    throw new Error(text || response.statusText || 'API request failed');
+    throw new Error(text || response.statusText || "API request failed");
   }
   return text ? JSON.parse(text) : null;
 }
@@ -56,11 +63,14 @@ export async function fetchSiteContent(): Promise<SiteContent> {
   return normalizeContent(content);
 }
 
-export async function saveSiteContent(content: SiteContent, token: string): Promise<SiteContent> {
+export async function saveSiteContent(
+  content: SiteContent,
+  token: string,
+): Promise<SiteContent> {
   const response = await fetch(`${API_BASE}/api/content`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(content),
@@ -68,30 +78,100 @@ export async function saveSiteContent(content: SiteContent, token: string): Prom
   return parseResponse(response);
 }
 
-export async function fetchLeads(token: string): Promise<LeadEntry[]> {
-  const response = await fetch(`${API_BASE}/api/leads`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+// ============================================================
+// UPDATED: fetchLeads with filtering, sorting, pagination
+// ============================================================
+export async function fetchLeads(
+  token: string,
+  params?: {
+    status?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: "ASC" | "DESC";
+    page?: number;
+    limit?: number;
+  },
+): Promise<{
+  data: LeadEntry[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  counts: {
+    all: number;
+    new: number;
+    pending: number;
+    approved: number;
+    booked: number;
+    cancelled: number;
+  };
+}> {
+  const queryParams = new URLSearchParams();
+  if (params?.status) queryParams.append("status", params.status);
+  if (params?.search) queryParams.append("search", params.search);
+  if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
+  if (params?.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+  if (params?.page) queryParams.append("page", String(params.page));
+  if (params?.limit) queryParams.append("limit", String(params.limit));
+
+  const url = `${API_BASE}/api/leads?${queryParams.toString()}`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
   });
   return parseResponse(response);
 }
 
+// ============================================================
+// NEW: updateLeadStatus
+// ============================================================
+export async function updateLeadStatus(
+  leadId: string,
+  status: string,
+  token: string,
+): Promise<void> {
+  const response = await fetch(`${API_BASE}/api/leads/${leadId}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+  await parseResponse(response);
+}
+
+// ============================================================
+// NEW: fetchLeadDetails
+// ============================================================
+export async function fetchLeadDetails(
+  leadId: string,
+  token: string,
+): Promise<any> {
+  const response = await fetch(`${API_BASE}/api/leads/${leadId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return parseResponse(response);
+}
+
+// ---------- existing functions (unchanged) ----------
 export async function postLead(lead: LeadEntry): Promise<LeadEntry> {
   const response = await fetch(`${API_BASE}/api/leads`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(lead),
   });
   return parseResponse(response);
 }
 
-export async function loginAdmin(username: string, password: string): Promise<{ token: string }> {
+export async function loginAdmin(
+  username: string,
+  password: string,
+): Promise<{ token: string }> {
   const response = await fetch(`${API_BASE}/api/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
   return parseResponse(response);
@@ -99,35 +179,28 @@ export async function loginAdmin(username: string, password: string): Promise<{ 
 
 export async function verifyToken(token: string): Promise<void> {
   const response = await fetch(`${API_BASE}/api/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
   await parseResponse(response);
 }
 
 export async function uploadFile(file: File, token: string): Promise<string> {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
   const response = await fetch(`${API_BASE}/api/upload`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
     body: formData,
   });
-  
   const result = await parseResponse(response);
   return result.url;
 }
 
 export async function deleteLead(leadId: string, token: string): Promise<void> {
   const response = await fetch(`${API_BASE}/api/leads/${leadId}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
   });
   await parseResponse(response);
 }
@@ -138,21 +211,24 @@ export async function fetchBlogs(): Promise<BlogPost[]> {
   return Array.isArray(blogs)
     ? blogs.map((post: any) => ({
         ...post,
-        slug: post.slug || slugifyBlogTitle(post.title || ''),
+        slug: post.slug || slugifyBlogTitle(post.title || ""),
       }))
     : [];
 }
 
-export async function createBlog(blog: Partial<BlogPost> & { content?: string }, token: string): Promise<any> {
+export async function createBlog(
+  blog: Partial<BlogPost> & { content?: string },
+  token: string,
+): Promise<any> {
   const payload = {
     ...blog,
-    image_url: (blog as any).image_url || blog.image || '',
+    image_url: (blog as any).image_url || blog.image || "",
   };
 
   const response = await fetch(`${API_BASE}/api/blogs`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
@@ -160,16 +236,20 @@ export async function createBlog(blog: Partial<BlogPost> & { content?: string },
   return parseResponse(response);
 }
 
-export async function updateBlog(id: number | string, blog: Partial<BlogPost> & { content?: string }, token: string): Promise<any> {
+export async function updateBlog(
+  id: number | string,
+  blog: Partial<BlogPost> & { content?: string },
+  token: string,
+): Promise<any> {
   const payload = {
     ...blog,
-    image_url: (blog as any).image_url || blog.image || '',
+    image_url: (blog as any).image_url || blog.image || "",
   };
 
   const response = await fetch(`${API_BASE}/api/blogs/${id}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
@@ -177,12 +257,13 @@ export async function updateBlog(id: number | string, blog: Partial<BlogPost> & 
   return parseResponse(response);
 }
 
-export async function deleteBlogPost(id: number | string, token: string): Promise<void> {
+export async function deleteBlogPost(
+  id: number | string,
+  token: string,
+): Promise<void> {
   const response = await fetch(`${API_BASE}/api/blogs/${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
   });
   await parseResponse(response);
 }
@@ -194,8 +275,8 @@ export async function fetchGoogleReviews(): Promise<GoogleReview[]> {
 
 export async function createLead(lead: LeadEntry): Promise<LeadEntry> {
   const response = await fetch(`${API_BASE}/api/leads`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(lead),
   });
   return parseResponse(response);
