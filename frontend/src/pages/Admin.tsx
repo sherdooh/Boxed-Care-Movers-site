@@ -166,6 +166,25 @@ const STATUS_OPTIONS = Object.entries(STATUS_CONFIG).map(
   }),
 );
 
+// ============================================================
+// SHARED DATE FORMATTER
+// Used by the leads table, the lead detail modal, and the PDF
+// quote generator so dates never render as raw ISO strings.
+// ============================================================
+function formatDisplayDate(
+  dateStr?: string | null,
+  options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  },
+): string {
+  if (!dateStr) return "Not set";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("en-US", options);
+}
+
 function StatusBadge({ status }: { status: string }) {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.new;
   return (
@@ -195,18 +214,23 @@ function StatCard({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-2 rounded-xl border transition-all w-full sm:w-auto ${
+      title={label}
+      className={`flex items-center gap-2 px-2.5 py-2 rounded-xl border transition-all w-full min-w-0 ${
         active
           ? "border-amber-500 bg-amber-50 shadow-sm"
           : "border-transparent bg-white hover:border-gray-200 shadow-sm"
       }`}
     >
-      <div className={`p-2 rounded-lg ${config?.bg || "bg-gray-100"}`}>
+      <div
+        className={`p-1.5 rounded-lg shrink-0 ${config?.bg || "bg-gray-100"}`}
+      >
         <Icon className={`w-4 h-4 ${config?.color || "text-gray-600"}`} />
       </div>
-      <div className="text-left">
-        <p className="text-xl font-bold text-gray-900">{count}</p>
-        <p className="text-[10px] text-gray-500 font-medium">{label}</p>
+      <div className="text-left min-w-0">
+        <p className="text-lg font-bold text-gray-900 leading-tight">{count}</p>
+        <p className="text-[10px] text-gray-500 font-medium truncate">
+          {label}
+        </p>
       </div>
     </button>
   );
@@ -243,14 +267,16 @@ function LeadDetailModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-gray-900">{lead.name}</h2>
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <h2 className="text-xl font-bold text-gray-900 truncate">
+              {lead.name}
+            </h2>
             <StatusBadge status={lead.status || "new"} />
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -258,37 +284,39 @@ function LeadDetailModal({
 
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 text-sm">
-              <Phone className="w-4 h-4 text-gray-400" />
+            <div className="flex items-center gap-3 text-sm min-w-0">
+              <Phone className="w-4 h-4 text-gray-400 shrink-0" />
               <a
                 href={`tel:${lead.phone}`}
-                className="text-blue-600 hover:underline"
+                className="text-blue-600 hover:underline truncate"
               >
                 {lead.phone}
               </a>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <Mail className="w-4 h-4 text-gray-400" />
+            <div className="flex items-center gap-3 text-sm min-w-0">
+              <Mail className="w-4 h-4 text-gray-400 shrink-0" />
               <a
                 href={`mailto:${lead.email}`}
-                className="text-blue-600 hover:underline"
+                className="text-blue-600 hover:underline truncate"
               >
                 {lead.email}
               </a>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <MapPin className="w-4 h-4 text-gray-400" />
-              <span>
+            <div className="flex items-center gap-3 text-sm min-w-0">
+              <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="truncate">
                 {lead.from_location} → {lead.to_location}
               </span>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <Calendar className="w-4 h-4 text-gray-400" />
-              <span>{lead.move_date || "Not set"}</span>
+            <div className="flex items-center gap-3 text-sm min-w-0">
+              <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+              <span className="truncate">
+                {formatDisplayDate(lead.move_date)}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 p-4 bg-amber-50 rounded-xl">
+          <div className="flex flex-wrap items-center gap-4 p-4 bg-amber-50 rounded-xl">
             <span className="text-sm font-medium text-gray-700">
               Update status:
             </span>
@@ -303,7 +331,7 @@ function LeadDetailModal({
                 </option>
               ))}
             </select>
-            <span className="text-xs text-gray-400 ml-auto">
+            <span className="text-xs text-gray-400 sm:ml-auto">
               Updated:{" "}
               {lead.status_updated_at
                 ? new Date(lead.status_updated_at).toLocaleString()
@@ -316,28 +344,36 @@ function LeadDetailModal({
               <h4 className="text-sm font-semibold text-gray-700 mb-1">
                 Customer Message
               </h4>
-              <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-xl">
+              <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-xl break-words">
                 {lead.message}
               </p>
             </div>
           )}
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-            <div className="bg-gray-50 p-3 rounded-xl">
+            <div className="bg-gray-50 p-3 rounded-xl min-w-0">
               <span className="text-gray-500">Floor (from)</span>
-              <p className="font-medium">{lead.current_floor || "N/A"}</p>
+              <p className="font-medium truncate">
+                {lead.current_floor || "N/A"}
+              </p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-xl">
+            <div className="bg-gray-50 p-3 rounded-xl min-w-0">
               <span className="text-gray-500">Floor (to)</span>
-              <p className="font-medium">{lead.destination_floor || "N/A"}</p>
+              <p className="font-medium truncate">
+                {lead.destination_floor || "N/A"}
+              </p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-xl">
+            <div className="bg-gray-50 p-3 rounded-xl min-w-0">
               <span className="text-gray-500">Current Size</span>
-              <p className="font-medium">{lead.current_size || "N/A"}</p>
+              <p className="font-medium truncate">
+                {lead.current_size || "N/A"}
+              </p>
             </div>
-            <div className="bg-gray-50 p-3 rounded-xl">
+            <div className="bg-gray-50 p-3 rounded-xl min-w-0">
               <span className="text-gray-500">Destination Size</span>
-              <p className="font-medium">{lead.destination_size || "N/A"}</p>
+              <p className="font-medium truncate">
+                {lead.destination_size || "N/A"}
+              </p>
             </div>
           </div>
 
@@ -1592,7 +1628,8 @@ export default function Admin() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-6">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-6"> */}
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-4">
           <aside className="space-y-6 lg:sticky lg:top-8">
             <section className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200">
               <div className="mb-6">
@@ -1930,7 +1967,8 @@ export default function Admin() {
                 <div className="space-y-4">
                   {/* Status Cards */}
                   {/* <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"> */}
-                  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-4">
+                  {/* <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 mb-4"> */}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 mb-3">
                     <StatCard
                       label="All"
                       count={counts.all}
@@ -2247,29 +2285,44 @@ export default function Admin() {
                               key={lead.id}
                               className="hover:bg-amber-50/30 transition-colors"
                             >
-                              <td className="border-b border-gray-200 px-3 py-2.5 whitespace-nowrap">
-                                <div className="font-semibold text-gray-900 text-sm">
+                              <td className="border-b border-gray-200 px-3 py-2.5 max-w-[160px]">
+                                <div
+                                  className="font-semibold text-gray-900 text-sm truncate"
+                                  title={lead.name}
+                                >
                                   {lead.name}
                                 </div>
-                                <div className="text-xs text-gray-500">
+                                <div
+                                  className="text-xs text-gray-500 truncate"
+                                  title={lead.id}
+                                >
                                   ID: {lead.id}
                                 </div>
                               </td>
-                              <td className="border-b border-gray-200 px-3 py-2.5 whitespace-nowrap">
-                                <div className="text-sm text-gray-700">
+                              <td className="border-b border-gray-200 px-3 py-2.5 max-w-[170px]">
+                                <div
+                                  className="text-sm text-gray-700 truncate"
+                                  title={lead.phone}
+                                >
                                   {lead.phone}
                                 </div>
-                                <div className="text-xs text-gray-500">
+                                <div
+                                  className="text-xs text-gray-500 truncate"
+                                  title={lead.email}
+                                >
                                   {lead.email}
                                 </div>
                               </td>
-                              <td className="border-b border-gray-200 px-3 py-2.5 whitespace-nowrap">
-                                <span className="text-sm text-gray-700">
+                              <td className="border-b border-gray-200 px-3 py-2.5 max-w-[200px]">
+                                <div
+                                  className="text-sm text-gray-700 truncate"
+                                  title={`${lead.from_location} → ${lead.to_location}`}
+                                >
                                   {lead.from_location} → {lead.to_location}
-                                </span>
-                                <span className="text-xs text-gray-400 ml-1">
-                                  {lead.move_date || "No date"}
-                                </span>
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {formatDisplayDate(lead.move_date)}
+                                </div>
                               </td>
                               <td className="border-b border-gray-200 px-3 py-2.5 whitespace-nowrap">
                                 <div className="flex items-center gap-2">
@@ -2452,7 +2505,7 @@ export default function Admin() {
                   <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-600">
                     Quote Editor
                   </p>
-                  <h2 className="mt-2 text-2xl font-bold text-gray-900">
+                  <h2 className="mt-2 text-xl font-bold text-gray-900">
                     Edit quote before download
                   </h2>
                   {quoteEditorStatus && (
