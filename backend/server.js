@@ -21,10 +21,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Explicitly answer preflight for every route.
-// Vercel's serverless layer can drop OPTIONS before it reaches
-// the cors() middleware ---s it always gets a response— this en.
-app.options("*", cors(corsOptions));
+// Express 5 dropped bare '*' wildcard — use '(.*)' instead.
+// preflight OPTIONS for every route so PATCH requests
+// are not blocked by the browser's CORS check.
+app.options("(.*)", cors(corsOptions));
 
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
