@@ -365,27 +365,32 @@ router.patch("/:id", auth, async (req, res, next) => {
 });
 
 // ============================================================
-// DELETE /api/leads/:id – Soft delete (archive)
+// DELETE /api/leads/:id – Hard delete (permanently remove)
 // ============================================================
 router.delete("/:id", auth, async (req, res, next) => {
   try {
-    await pool.query(`UPDATE leads SET status = 'cancelled' WHERE id = $1`, [
+    const result = await pool.query(`DELETE FROM leads WHERE id = $1`, [
       req.params.id,
     ]);
 
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Lead not found" });
+    }
+
+    // log the deletion)
     await pool.query(
       `INSERT INTO lead_activities (id, lead_id, activity_type, description, created_by)
        VALUES ($1, $2, $3, $4, $5)`,
       [
         `act_${Date.now()}`,
         req.params.id,
-        "archived",
-        "Lead archived",
+        "deleted",
+        "Lead permanently deleted",
         req.admin?.username || "admin",
       ],
     );
 
-    res.status(204).send();
+    res.status(204).send(); // No content – successful deletion
   } catch (err) {
     next(err);
   }

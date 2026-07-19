@@ -2255,85 +2255,76 @@ export default function Admin() {
                       No leads found matching your filters.
                     </p>
                   ) : (
-                    <div className="overflow-x-auto rounded-3xl border border-gray-200 bg-white shadow-sm">
-                      <table
-                        className="min-w-full border-separate border border-gray-200 rounded-3xl text-sm"
-                        style={{ borderSpacing: 0 }}
-                      >
+                    <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+                      <table className="min-w-[700px] w-full text-sm">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="border-b border-gray-200 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                            <th className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-left">
                               Name
                             </th>
-                            <th className="border-b border-gray-200 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                            <th className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-left">
                               Contact
                             </th>
-                            <th className="border-b border-gray-200 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
-                              Move Details
+                            <th className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-left">
+                              Move
                             </th>
-                            <th className="border-b border-gray-200 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                            <th className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-left">
                               Status
                             </th>
-                            <th className="border-b border-gray-200 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-500">
+                            <th className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-gray-500 text-right">
                               Actions
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white">
+                        <tbody>
                           {leads.map((lead) => (
                             <tr
                               key={lead.id}
-                              className="hover:bg-amber-50/30 transition-colors"
+                              className="border-b border-gray-100 hover:bg-amber-50/30 transition-colors"
                             >
-                              <td className="border-b border-gray-200 px-3 py-2.5 max-w-[160px]">
-                                <div
-                                  className="font-semibold text-gray-900 text-sm truncate"
-                                  title={lead.name}
-                                >
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                <div className="font-semibold text-gray-900 text-sm">
                                   {lead.name}
                                 </div>
-                                <div
-                                  className="text-xs text-gray-500 truncate"
-                                  title={lead.id}
-                                >
+                                <div className="text-[10px] text-gray-500">
                                   ID: {lead.id}
                                 </div>
                               </td>
-                              <td className="border-b border-gray-200 px-3 py-2.5 max-w-[170px]">
-                                <div
-                                  className="text-sm text-gray-700 truncate"
-                                  title={lead.phone}
-                                >
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                <div className="text-sm text-gray-700">
                                   {lead.phone}
                                 </div>
-                                <div
-                                  className="text-xs text-gray-500 truncate"
-                                  title={lead.email}
-                                >
+                                <div className="text-[10px] text-gray-500">
                                   {lead.email}
                                 </div>
                               </td>
-                              <td className="border-b border-gray-200 px-3 py-2.5 max-w-[200px]">
-                                <div
-                                  className="text-sm text-gray-700 truncate"
-                                  title={`${lead.from_location} → ${lead.to_location}`}
-                                >
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                <span className="text-sm text-gray-700">
                                   {lead.from_location} → {lead.to_location}
-                                </div>
-                                <div className="text-xs text-gray-400">
-                                  {formatDisplayDate(lead.move_date)}
-                                </div>
+                                </span>
+                                <span className="text-[10px] text-gray-400 ml-1">
+                                  {lead.move_date || "No date"}
+                                </span>
                               </td>
-                              <td className="border-b border-gray-200 px-3 py-2.5 whitespace-nowrap">
-                                <div className="flex items-center gap-2">
+                              <td className="px-3 py-2.5 whitespace-nowrap">
+                                <div className="flex items-center gap-1.5">
                                   <StatusBadge status={lead.status || "new"} />
                                   {updatingLeadStatus === lead.id && (
-                                    <Loader2 className="w-3 h-3 animate-spin text-amber-500" />
+                                    <Loader2 className="w-3 h-3 animate-spin" />
                                   )}
                                 </div>
                               </td>
-                              <td className="border-b border-gray-200 px-3 py-2.5 whitespace-nowrap">
-                                <div className="flex items-center gap-1">
+                              <td className="px-3 py-2.5 whitespace-nowrap text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  {/* Quote button */}
+                                  <button
+                                    onClick={() => openQuoteEditor(lead)}
+                                    className="px-2 py-0.5 bg-blue-500 hover:bg-blue-600 text-white text-[10px] font-semibold rounded transition-colors"
+                                    title="Generate Quote"
+                                  >
+                                    Quote
+                                  </button>
+
                                   {/* Status dropdown */}
                                   <select
                                     value={lead.status || "new"}
@@ -2343,7 +2334,7 @@ export default function Admin() {
                                         e.target.value,
                                       )
                                     }
-                                    className="text-[11px] border border-gray-200 rounded-lg px-1.5 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-amber-300"
+                                    className="text-[10px] border border-gray-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-amber-300"
                                     disabled={updatingLeadStatus === lead.id}
                                   >
                                     {STATUS_OPTIONS.map((opt) => (
@@ -2355,7 +2346,7 @@ export default function Admin() {
 
                                   <button
                                     onClick={() => viewLeadDetail(lead.id)}
-                                    className="p-1 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                    className="p-1 text-blue-500 hover:bg-blue-50 rounded"
                                     title="View details"
                                   >
                                     <Eye className="w-3.5 h-3.5" />
@@ -2363,17 +2354,17 @@ export default function Admin() {
 
                                   <button
                                     onClick={() => handleDeleteLead(lead.id)}
-                                    className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
                                     title="Delete"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
 
                                   <a
-                                    href={`https://wa.me/${lead.phone.replace(/\D/g, "")}?text=Hi%20${encodeURIComponent(lead.name)}%2C%20I'm%20following%20up%20on%20your%20moving%20quote%20request.`}
+                                    href={`https://wa.me/${lead.phone.replace(/\D/g, "")}?text=Hi%20${encodeURIComponent(lead.name)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-1 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
+                                    className="p-1 text-green-500 hover:bg-green-50 rounded"
                                     title="WhatsApp"
                                   >
                                     <Phone className="w-3.5 h-3.5" />
