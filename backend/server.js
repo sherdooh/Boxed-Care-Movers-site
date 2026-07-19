@@ -6,25 +6,20 @@ const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
-const corsOptions = {
-  origin: [
-    "https://boxedwithcare.co.ke",
-    "https://www.boxedwithcare.co.ke",
-    "http://localhost:5173",
-    "http://localhost:5174",
-  ],
-  credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-
-app.use(cors(corsOptions));
-
-// Express 5 dropped bare '*' wildcard — use '(.*)' instead.
-// preflight OPTIONS for every route so PATCH requests
-// are not blocked by the browser's CORS check.
-app.options("(.*)", cors(corsOptions));
+app.use(
+  cors({
+    origin: [
+      "https://boxedwithcare.co.ke",
+      "https://www.boxedwithcare.co.ke",
+      "http://localhost:5173",
+      "http://localhost:5174",
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -51,5 +46,4 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-// Export for Vercel
 module.exports = app;
