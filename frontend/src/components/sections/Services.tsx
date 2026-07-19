@@ -1,42 +1,49 @@
-import { Home, Building2, Package, Truck, Warehouse, Wrench } from 'lucide-react';
-import { SiteContent } from '../../lib/siteContent';
+import {
+  Home,
+  Building2,
+  Package,
+  Truck,
+  Warehouse,
+  Wrench,
+} from "lucide-react";
+import { SiteContent } from "../../lib/siteContent";
 
 const serviceMetadata = [
   {
     icon: Home,
-    title: 'Residential Moving',
+    title: "Residential Moving",
     description:
-      'Smooth, stress-free home relocations whether you are moving across town or across the region. We handle everything with personal care.',
+      "Smooth, stress-free home relocations whether you are moving across town or across the region. We handle everything with personal care.",
   },
   {
     icon: Building2,
-    title: 'Office & Commercial',
+    title: "Office & Commercial",
     description:
-      'Minimise downtime with our efficient office relocation services. We plan every detail so your business keeps moving forward.',
+      "Minimise downtime with our efficient office relocation services. We plan every detail so your business keeps moving forward.",
   },
   {
     icon: Package,
-    title: 'Professional Packing',
+    title: "Professional Packing",
     description:
-      'Our skilled team uses quality materials to pack fragile, bulky, and valuable items so they arrive exactly as they left.',
+      "Our skilled team uses quality materials to pack fragile, bulky, and valuable items so they arrive exactly as they left.",
   },
   {
     icon: Truck,
-    title: 'Long-Distance Moving',
+    title: "Long-Distance Moving",
     description:
-      'Reliable long-distance moving with GPS-tracked transport. Your belongings arrive safely and on schedule, no matter where you are headed.',
+      "Reliable long-distance moving with GPS-tracked transport. Your belongings arrive safely and on schedule, no matter where you are headed.",
   },
   {
     icon: Warehouse,
-    title: 'Storage Solutions',
+    title: "Storage Solutions",
     description:
-      'Secure, climate-appropriate storage facilities available for short or long-term needs during your transition period.',
+      "Secure, climate-appropriate storage facilities available for short or long-term needs during your transition period.",
   },
   {
     icon: Wrench,
-    title: 'Furniture Assembly',
+    title: "Furniture Assembly",
     description:
-      'Disassembly and reassembly of furniture handled by experienced technicians — so you can settle in without the hassle.',
+      "Disassembly and reassembly of furniture handled by experienced technicians — so you can settle in without the hassle.",
   },
 ];
 
@@ -47,7 +54,9 @@ interface ServicesProps {
 export default function Services({ content }: ServicesProps) {
   const services = serviceMetadata.map((meta, index) => ({
     ...meta,
-    image: content?.serviceImages[index] || 'https://images.pexels.com/photos/6474471/pexels-photo-6474471.jpeg?auto=compress&cs=tinysrgb&w=600',
+    image:
+      content?.serviceImages[index] ||
+      "https://images.pexels.com/photos/6474471/pexels-photo-6474471.jpeg?auto=compress&cs=tinysrgb&w=600",
   }));
 
   return (
@@ -62,8 +71,8 @@ export default function Services({ content }: ServicesProps) {
             Our Services
           </h2>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-            From a single box to a full office fit-out, we have the expertise, vehicles,
-            and team to handle any move with precision and care.
+            From a single box to a full office fit-out, we have the expertise,
+            vehicles, and team to handle any move with precision and care.
           </p>
         </div>
 
@@ -91,8 +100,12 @@ export default function Services({ content }: ServicesProps) {
 
               {/* Content */}
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{service.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{service.description}</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  {service.title}
+                </h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  {service.description}
+                </p>
               </div>
             </div>
           ))}
@@ -123,8 +136,12 @@ export default function Services({ content }: ServicesProps) {
 
                 {/* Content */}
                 <div className="p-4">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{service.title}</h3>
-                  <p className="text-gray-500 text-xs leading-relaxed">{service.description}</p>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                    {service.title}
+                  </h3>
+                  <p className="text-gray-500 text-xs leading-relaxed">
+                    {service.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -144,4 +161,3 @@ export default function Services({ content }: ServicesProps) {
     </section>
   );
 }
-

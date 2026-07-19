@@ -1,50 +1,60 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
-import Header from './components/layout/Header';
-import Hero from './components/sections/Hero';
-import Services from './components/sections/Services';
-import WhyUs from './components/sections/WhyUs';
-import HowItWorks from './components/sections/HowItWorks';
-import Testimonials from './components/sections/Testimonials';
-import Blog from './components/sections/Blog';
-import BlogDetails from './components/sections/BlogDetails';
-import QuoteForm from './components/sections/QuoteForm';
-import Footer from './components/layout/Footer';
-import { defaultSiteContent } from './lib/siteContent';
-import { fetchSiteContent } from './lib/api';
-import { slugifyBlogTitle } from './lib/blogUtils';
-import AIChatbot from './components/sections/AIChatbot';
+import { useState, useEffect, lazy, Suspense } from "react";
+import Header from "./components/layout/Header";
+import Hero from "./components/sections/Hero";
+import Services from "./components/sections/Services";
+import WhyUs from "./components/sections/WhyUs";
+import HowItWorks from "./components/sections/HowItWorks";
+import Testimonials from "./components/sections/Testimonials";
+import Blog from "./components/sections/Blog";
+import BlogDetails from "./components/sections/BlogDetails";
+import QuoteForm from "./components/sections/QuoteForm";
+import Footer from "./components/layout/Footer";
+import { defaultSiteContent } from "./lib/siteContent";
+import { fetchSiteContent } from "./lib/api";
+import { slugifyBlogTitle } from "./lib/blogUtils";
+import AIChatbot from "./components/sections/AIChatbot";
+import FAQ from "./components/sections/FAQ";
 
 // Lazy load Admin
-const Admin = lazy(() => import('./pages/Admin'));
+const Admin = lazy(() => import("./pages/Admin"));
 
 // AOS & Helmet imports
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import { Helmet } from 'react-helmet-async';
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { Helmet } from "react-helmet-async";
 
 function App() {
   const [scrolled, setScrolled] = useState(false);
   const [content, setContent] = useState(defaultSiteContent);
   const [loading, setLoading] = useState(true);
 
-  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
-  const isAdmin = currentPath.startsWith('/admin');
-  const isBlogDetailsRoute = currentPath.startsWith('/blog/');
+  const currentPath =
+    typeof window !== "undefined" ? window.location.pathname : "/";
+  const isAdmin = currentPath.startsWith("/admin");
+  const isBlogDetailsRoute = currentPath.startsWith("/blog/");
   const blogSlug = isBlogDetailsRoute
-    ? decodeURIComponent(currentPath.split('/').filter(Boolean)[1] || '')
-    : '';
+    ? decodeURIComponent(currentPath.split("/").filter(Boolean)[1] || "")
+    : "";
 
   // Cookie helpers
   const getCookie = (name: string) =>
-    document.cookie.split('; ').find((cookie) => cookie.startsWith(`${name}=`))?.split('=')[1] || '';
+    document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith(`${name}=`))
+      ?.split("=")[1] || "";
 
   const setCookie = (name: string, value: string, days: number) => {
-    const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+    const expires = new Date(
+      Date.now() + days * 24 * 60 * 60 * 1000,
+    ).toUTCString();
     document.cookie = `${name}=${encodeURIComponent(value)}; path=/; expires=${expires}; SameSite=Lax`;
   };
 
   const generateVisitorId = () => {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    if (
+      typeof crypto !== "undefined" &&
+      typeof crypto.randomUUID === "function"
+    ) {
       return crypto.randomUUID();
     }
     return `${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
@@ -52,21 +62,21 @@ function App() {
 
   // Load content & set visitor cookies
   useEffect(() => {
-    if (typeof window === 'undefined' || isAdmin) {
+    if (typeof window === "undefined" || isAdmin) {
       setLoading(false);
       return;
     }
 
-    const visitorId = getCookie('visitor_id') || generateVisitorId();
-    setCookie('visitor_id', visitorId, 365);
-    setCookie('visitor_session_start', `${Date.now()}`, 1);
+    const visitorId = getCookie("visitor_id") || generateVisitorId();
+    setCookie("visitor_id", visitorId, 365);
+    setCookie("visitor_session_start", `${Date.now()}`, 1);
 
     const loadContent = async () => {
       try {
         const data = await fetchSiteContent();
         setContent({ ...defaultSiteContent, ...data });
       } catch (error) {
-        console.warn('Using default content (API failed)');
+        console.warn("Using default content (API failed)");
         setContent(defaultSiteContent);
       } finally {
         setLoading(false);
@@ -79,8 +89,8 @@ function App() {
   // Scroll effect for header
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // AOS initialization
@@ -89,15 +99,19 @@ function App() {
       AOS.init({
         duration: 800,
         once: true,
-        easing: 'ease-out-cubic',
+        easing: "ease-out-cubic",
       });
     }
   }, [isAdmin, content]);
 
   // Blog data
-  const blogPosts = content.blogPosts.length ? content.blogPosts : defaultSiteContent.blogPosts;
+  const blogPosts = content.blogPosts.length
+    ? content.blogPosts
+    : defaultSiteContent.blogPosts;
   const activeBlogPost = blogSlug
-    ? blogPosts.find((post) => (post.slug || slugifyBlogTitle(post.title)) === blogSlug)
+    ? blogPosts.find(
+        (post) => (post.slug || slugifyBlogTitle(post.title)) === blogSlug,
+      )
     : null;
 
   // Admin route (lazy loaded)
@@ -130,16 +144,31 @@ function App() {
   // Blog detail page
   if (isBlogDetailsRoute) {
     if (activeBlogPost) {
-      return <BlogDetails content={content} post={activeBlogPost} posts={blogPosts} />;
+      return (
+        <BlogDetails
+          content={content}
+          post={activeBlogPost}
+          posts={blogPosts}
+        />
+      );
     }
 
     return (
       <div className="min-h-screen bg-[#f7f1e8] px-4 py-20 text-gray-900">
         <div className="mx-auto max-w-3xl rounded-[32px] border border-white/70 bg-white/80 p-8 shadow-[0_24px_70px_rgba(107,81,50,0.12)] backdrop-blur-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">Article not found</p>
-          <h1 className="mt-4 text-4xl font-black tracking-[-0.04em]">This blog post does not exist.</h1>
-          <p className="mt-4 text-lg leading-8 text-gray-600">The link may be outdated, or the post may have been removed.</p>
-          <a href="/#blog" className="mt-8 inline-flex rounded-full bg-[#171311] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-amber-700">
+            Article not found
+          </p>
+          <h1 className="mt-4 text-4xl font-black tracking-[-0.04em]">
+            This blog post does not exist.
+          </h1>
+          <p className="mt-4 text-lg leading-8 text-gray-600">
+            The link may be outdated, or the post may have been removed.
+          </p>
+          <a
+            href="/#blog"
+            className="mt-8 inline-flex rounded-full bg-[#171311] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5"
+          >
             Back to blog
           </a>
         </div>
@@ -155,34 +184,54 @@ function App() {
       {/* ============================================================
           SEO + SOCIAL SHARING META TAGS (Homepage)
           ============================================================ */}
- <Helmet>
-  {/* Basic SEO */}
-  <title>{content.siteName} – Professional Moving Services in Kenya</title>
-  <meta name="description" content={content.heroSubtext} />
-  <meta name="keywords" content="movers Nairobi, packing services Kenya, relocation Nairobi, moving company Kenya" />
-  <link rel="canonical" href="https://boxedwithcare.co.ke" />
+      <Helmet>
+        {/* Basic SEO */}
+        <title>
+          {content.siteName} – Professional Movers & Packers in Nairobi, Kenya
+        </title>
+        <meta name="description" content={content.heroSubtext} />
+        <meta
+          name="keywords"
+          content="movers Nairobi, packing services Kenya, relocation Nairobi, moving company Kenya"
+        />
+        <link rel="canonical" href="https://boxedwithcare.co.ke" />
 
-  {/* Open Graph */}
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://boxedwithcare.co.ke" />
-  <meta property="og:title" content={`${content.siteName} – Professional Moving Services in Kenya`} />
-  <meta property="og:description" content={content.heroSubtext} />
-  <meta property="og:image" content="https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/social-share.PNG" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:type" content="image/png" />
-  <meta property="og:image:alt" content="Boxed With Care Movers – Professional Moving Services in Kenya" />
-  <meta property="og:site_name" content={content.siteName} />
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://boxedwithcare.co.ke" />
+        <meta
+          property="og:title"
+          content={`${content.siteName} – Professional Moving Services in Kenya`}
+        />
+        <meta property="og:description" content={content.heroSubtext} />
+        <meta
+          property="og:image"
+          content="https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/social-share.PNG"
+        />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta
+          property="og:image:alt"
+          content="Boxed With Care Movers – Professional Moving Services in Kenya"
+        />
+        <meta property="og:site_name" content={content.siteName} />
 
-  {/* Twitter Card */}
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content={`${content.siteName} – Professional Moving Services`} />
-  <meta name="twitter:description" content={content.heroSubtext} />
-  <meta name="twitter:image" content="https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/social-share.PNG" />
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content={`${content.siteName} – Professional Moving Services`}
+        />
+        <meta name="twitter:description" content={content.heroSubtext} />
+        <meta
+          name="twitter:image"
+          content="https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/social-share.PNG"
+        />
 
-  {/* Theme */}
-  <meta name="theme-color" content="#f59e0b" />
-</Helmet>
+        {/* Theme */}
+        <meta name="theme-color" content="#f59e0b" />
+      </Helmet>
 
       <div className="min-h-screen bg-white">
         <Header
@@ -190,7 +239,10 @@ function App() {
           siteName={content.siteName}
           siteTagline={content.siteTagline}
           phone={content.phone}
-          logoUrl={content.logoUrl || 'https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/logo.webp'}
+          logoUrl={
+            content.logoUrl ||
+            "https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/logo.webp"
+          }
         />
 
         <Hero content={content} />
@@ -198,6 +250,7 @@ function App() {
         <WhyUs content={content} />
         <HowItWorks phone={content.phone} />
         <Testimonials />
+        <FAQ />
         <Blog content={content} />
         <QuoteForm content={content} />
 
@@ -207,8 +260,10 @@ function App() {
           phone={content.phone}
           email={content.email}
           footerText={content.footerText}
-          logoUrl={content.logoUrl || 'https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/logo.webp'}
-          
+          logoUrl={
+            content.logoUrl ||
+            "https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/logo.webp"
+          }
         />
       </div>
 
@@ -216,15 +271,14 @@ function App() {
 
       <WhatsAppButton phone={content.phone} />
       <AIChatbot />
-      
     </>
   );
 }
 
 // WhatsApp Button component
 function WhatsAppButton({ phone }: { phone?: string }) {
-  const whatsappNumber = phone?.replace(/\D/g, '') || '254748851679';
-  const message = 'Hi%20I%20need%20a%20moving%20quote';
+  const whatsappNumber = phone?.replace(/\D/g, "") || "254748851679";
+  const message = "Hi%20I%20need%20a%20moving%20quote";
   const href = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   return (

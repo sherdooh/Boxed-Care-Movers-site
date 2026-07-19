@@ -1,13 +1,27 @@
-import { ArrowRight, ShieldCheck, Truck, Box, BadgeCheck, Star, Clock, ThumbsUp, Award, Phone, MapPin } from 'lucide-react';
-import { SiteContent } from '../../lib/siteContent';
+import {
+  ArrowRight,
+  ShieldCheck,
+  Truck,
+  Box,
+  BadgeCheck,
+  Star,
+  Clock,
+  ThumbsUp,
+  Award,
+  Phone,
+  MapPin,
+} from "lucide-react";
+import { SiteContent } from "../../lib/siteContent";
 
 interface HeroProps {
   content: SiteContent;
 }
 
 export default function Hero({ content }: HeroProps) {
-  const headlineLines = (content.heroHeadline || "Moving Shouldn't Be Stressful.")
-    .split('\n')
+  const headlineLines = (
+    content.heroHeadline || "Moving Shouldn't Be Stressful."
+  )
+    .split("\n")
     .filter(Boolean);
 
   return (
@@ -40,19 +54,31 @@ export default function Hero({ content }: HeroProps) {
             {/* Animated Headline with Typewriter Effect */}
             <h1 className="mt-5 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight text-gray-900">
               {headlineLines.map((line, index) => (
-                <span 
-                  key={index} 
+                <span
+                  key={index}
                   className="block animate-[slideUp_0.8s_ease-out]"
                   style={{ animationDelay: `${index * 0.2}s` }}
                 >
-                  {line}
+                  {content.heroHighlight &&
+                  line.includes(content.heroHighlight) ? (
+                    <>
+                      {line.split(content.heroHighlight)[0]}
+                      <span className="text-amber-500">
+                        {content.heroHighlight}
+                      </span>
+                      {line.split(content.heroHighlight)[1]}
+                    </>
+                  ) : (
+                    line
+                  )}
                 </span>
               ))}
             </h1>
 
             {/* Subtext with fade-in */}
             <p className="mt-4 max-w-lg text-base sm:text-lg text-gray-600 leading-relaxed animate-[fadeIn_1s_ease-out_0.4s_both]">
-              {content.heroSubtext || 'Professional movers delivering reliable residential and commercial relocation services with care and precision.'}
+              {content.heroSubtext ||
+                "Professional movers delivering reliable residential and commercial relocation services with care and precision."}
             </p>
 
             {/* CTA Buttons with hover animations */}
@@ -61,14 +87,14 @@ export default function Hero({ content }: HeroProps) {
                 href="#contact"
                 className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-600 to-amber-500 px-6 sm:px-8 py-3.5 text-sm sm:text-base font-semibold text-white shadow-lg shadow-amber-600/30 hover:shadow-xl hover:shadow-amber-600/40 transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]"
               >
-                {content.heroCTA || 'Get Free Quote'}
+                {content.heroCTA || "Get Free Quote"}
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </a>
               <a
                 href="#services"
                 className="inline-flex items-center justify-center rounded-full border border-gray-200 bg-white/80 px-6 sm:px-8 py-3.5 text-sm sm:text-base font-semibold text-gray-700 hover:bg-gray-50 hover:border-amber-200 hover:shadow-md transition-all duration-300 hover:-translate-y-1"
               >
-                {content.heroCallText || 'View Services'}
+                {content.heroCallText || "View Services"}
               </a>
             </div>
 
@@ -92,9 +118,9 @@ export default function Hero({ content }: HeroProps) {
             {/* Stats with hover effects */}
             <div className="mt-10 grid grid-cols-3 gap-3 sm:gap-4 max-w-md">
               {[
-                { label: '10+', sub: 'Years Experience', icon: Award },
-                { label: '24/7', sub: 'Support Available', icon: Clock },
-                { label: '100%', sub: 'Care Guarantee', icon: ThumbsUp },
+                { label: "10+", sub: "Years Experience", icon: Award },
+                { label: "24/7", sub: "Support Available", icon: Clock },
+                { label: "100%", sub: "Care Guarantee", icon: ThumbsUp },
               ].map((item, index) => (
                 <div
                   key={item.label}
@@ -102,8 +128,12 @@ export default function Hero({ content }: HeroProps) {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <item.icon className="h-5 w-5 text-amber-500 mx-auto mb-1 group-hover:scale-110 transition-transform duration-300" />
-                  <p className="text-lg sm:text-xl font-bold text-gray-900">{item.label}</p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 font-medium">{item.sub}</p>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900">
+                    {item.label}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 font-medium">
+                    {item.sub}
+                  </p>
                 </div>
               ))}
             </div>
@@ -122,20 +152,43 @@ export default function Hero({ content }: HeroProps) {
                 <div className="aspect-square p-6 sm:p-8 flex items-center justify-center">
                   {/* Enhanced Truck Illustration */}
                   <div className="w-full max-w-sm">
-                    <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+                    <svg
+                      viewBox="0 0 400 300"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-full h-auto"
+                    >
                       <defs>
-                        <linearGradient id="truckBody" x1="0" y1="0" x2="0" y2="1">
+                        <linearGradient
+                          id="truckBody"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
                           <stop offset="0%" stopColor="#f5ede4" />
                           <stop offset="100%" stopColor="#e8dccc" />
                         </linearGradient>
-                        <linearGradient id="truckCab" x1="0" y1="0" x2="0" y2="1">
+                        <linearGradient
+                          id="truckCab"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
                           <stop offset="0%" stopColor="#2d241e" />
                           <stop offset="100%" stopColor="#1a1410" />
                         </linearGradient>
                       </defs>
 
                       {/* Shadow */}
-                      <ellipse cx="190" cy="270" rx="150" ry="14" fill="rgba(60,40,26,0.08)" />
+                      <ellipse
+                        cx="190"
+                        cy="270"
+                        rx="150"
+                        ry="14"
+                        fill="rgba(60,40,26,0.08)"
+                      />
 
                       {/* Road */}
                       <path
@@ -148,54 +201,201 @@ export default function Hero({ content }: HeroProps) {
 
                       {/* Moving boxes */}
                       <g className="animate-[float_4s_ease-in-out_infinite]">
-                        <rect x="70" y="145" width="44" height="38" rx="6" fill="#f5ede4" stroke="#d4c5b5" strokeWidth="1.5" />
-                        <rect x="75" y="150" width="34" height="4" rx="2" fill="#d4c5b5" opacity="0.5" />
-                        <rect x="75" y="158" width="24" height="4" rx="2" fill="#d4c5b5" opacity="0.5" />
+                        <rect
+                          x="70"
+                          y="145"
+                          width="44"
+                          height="38"
+                          rx="6"
+                          fill="#f5ede4"
+                          stroke="#d4c5b5"
+                          strokeWidth="1.5"
+                        />
+                        <rect
+                          x="75"
+                          y="150"
+                          width="34"
+                          height="4"
+                          rx="2"
+                          fill="#d4c5b5"
+                          opacity="0.5"
+                        />
+                        <rect
+                          x="75"
+                          y="158"
+                          width="24"
+                          height="4"
+                          rx="2"
+                          fill="#d4c5b5"
+                          opacity="0.5"
+                        />
                       </g>
 
                       <g className="animate-[float_4.5s_ease-in-out_infinite_0.8s]">
-                        <rect x="120" y="125" width="50" height="42" rx="6" fill="#f5ede4" stroke="#d4c5b5" strokeWidth="1.5" />
-                        <rect x="126" y="131" width="38" height="4" rx="2" fill="#d4c5b5" opacity="0.5" />
-                        <rect x="126" y="140" width="26" height="4" rx="2" fill="#d4c5b5" opacity="0.5" />
+                        <rect
+                          x="120"
+                          y="125"
+                          width="50"
+                          height="42"
+                          rx="6"
+                          fill="#f5ede4"
+                          stroke="#d4c5b5"
+                          strokeWidth="1.5"
+                        />
+                        <rect
+                          x="126"
+                          y="131"
+                          width="38"
+                          height="4"
+                          rx="2"
+                          fill="#d4c5b5"
+                          opacity="0.5"
+                        />
+                        <rect
+                          x="126"
+                          y="140"
+                          width="26"
+                          height="4"
+                          rx="2"
+                          fill="#d4c5b5"
+                          opacity="0.5"
+                        />
                       </g>
 
                       <g className="animate-[float_5s_ease-in-out_infinite_1.6s]">
-                        <rect x="50" y="175" width="35" height="30" rx="6" fill="#f5ede4" stroke="#d4c5b5" strokeWidth="1.5" />
-                        <rect x="55" y="180" width="25" height="3" rx="2" fill="#d4c5b5" opacity="0.5" />
+                        <rect
+                          x="50"
+                          y="175"
+                          width="35"
+                          height="30"
+                          rx="6"
+                          fill="#f5ede4"
+                          stroke="#d4c5b5"
+                          strokeWidth="1.5"
+                        />
+                        <rect
+                          x="55"
+                          y="180"
+                          width="25"
+                          height="3"
+                          rx="2"
+                          fill="#d4c5b5"
+                          opacity="0.5"
+                        />
                       </g>
 
                       {/* Truck Body */}
-                      <rect x="110" y="170" width="160" height="70" rx="12" fill="url(#truckBody)" stroke="#d4c5b5" strokeWidth="1.5" />
+                      <rect
+                        x="110"
+                        y="170"
+                        width="160"
+                        height="70"
+                        rx="12"
+                        fill="url(#truckBody)"
+                        stroke="#d4c5b5"
+                        strokeWidth="1.5"
+                      />
 
                       {/* Truck Body details */}
-                      <rect x="120" y="180" width="50" height="30" rx="6" fill="#faf6f0" stroke="#e8dccc" strokeWidth="1" />
-                      <rect x="180" y="180" width="40" height="30" rx="6" fill="#faf6f0" stroke="#e8dccc" strokeWidth="1" />
+                      <rect
+                        x="120"
+                        y="180"
+                        width="50"
+                        height="30"
+                        rx="6"
+                        fill="#faf6f0"
+                        stroke="#e8dccc"
+                        strokeWidth="1"
+                      />
+                      <rect
+                        x="180"
+                        y="180"
+                        width="40"
+                        height="30"
+                        rx="6"
+                        fill="#faf6f0"
+                        stroke="#e8dccc"
+                        strokeWidth="1"
+                      />
 
                       {/* Truck Cab */}
-                      <path d="M270 186 L270 240 L240 240 L240 200 L260 200 L270 186 Z" fill="url(#truckCab)" />
+                      <path
+                        d="M270 186 L270 240 L240 240 L240 200 L260 200 L270 186 Z"
+                        fill="url(#truckCab)"
+                      />
 
                       {/* Window */}
-                      <path d="M254 196 L270 196 L270 212 L254 212 Z" fill="#4a6fa5" opacity="0.4" />
+                      <path
+                        d="M254 196 L270 196 L270 212 L254 212 Z"
+                        fill="#4a6fa5"
+                        opacity="0.4"
+                      />
 
                       {/* Headlight glow */}
-                      <circle cx="272" cy="220" r="4" fill="#fbbf24" opacity="0.6" />
+                      <circle
+                        cx="272"
+                        cy="220"
+                        r="4"
+                        fill="#fbbf24"
+                        opacity="0.6"
+                      />
 
                       {/* Wheels */}
-                      <circle cx="160" cy="245" r="28" fill="#1a1410" stroke="#2d241e" strokeWidth="2" />
+                      <circle
+                        cx="160"
+                        cy="245"
+                        r="28"
+                        fill="#1a1410"
+                        stroke="#2d241e"
+                        strokeWidth="2"
+                      />
                       <circle cx="160" cy="245" r="14" fill="#3d3d3d" />
                       <circle cx="160" cy="245" r="6" fill="#666" />
 
-                      <circle cx="230" cy="245" r="28" fill="#1a1410" stroke="#2d241e" strokeWidth="2" />
+                      <circle
+                        cx="230"
+                        cy="245"
+                        r="28"
+                        fill="#1a1410"
+                        stroke="#2d241e"
+                        strokeWidth="2"
+                      />
                       <circle cx="230" cy="245" r="14" fill="#3d3d3d" />
                       <circle cx="230" cy="245" r="6" fill="#666" />
 
                       {/* Highlight */}
-                      <rect x="115" y="172" width="100" height="6" rx="3" fill="white" opacity="0.3" />
+                      <rect
+                        x="115"
+                        y="172"
+                        width="100"
+                        height="6"
+                        rx="3"
+                        fill="white"
+                        opacity="0.3"
+                      />
 
                       {/* Motion lines */}
-                      <path d="M360 200 L380 200" stroke="#d4c5b5" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
-                      <path d="M365 210 L385 210" stroke="#d4c5b5" strokeWidth="2" strokeLinecap="round" opacity="0.2" />
-                      <path d="M355 190 L375 190" stroke="#d4c5b5" strokeWidth="2" strokeLinecap="round" opacity="0.25" />
+                      <path
+                        d="M360 200 L380 200"
+                        stroke="#d4c5b5"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        opacity="0.3"
+                      />
+                      <path
+                        d="M365 210 L385 210"
+                        stroke="#d4c5b5"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        opacity="0.2"
+                      />
+                      <path
+                        d="M355 190 L375 190"
+                        stroke="#d4c5b5"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        opacity="0.25"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -207,8 +407,12 @@ export default function Hero({ content }: HeroProps) {
                       <Truck className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-amber-700">Reliable</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-800">On-time delivery</p>
+                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-amber-700">
+                        Reliable
+                      </p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-800">
+                        On-time delivery
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -219,8 +423,12 @@ export default function Hero({ content }: HeroProps) {
                       <Box className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-amber-700">Careful</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-800">Every item</p>
+                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-amber-700">
+                        Careful
+                      </p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-800">
+                        Every item
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -231,8 +439,12 @@ export default function Hero({ content }: HeroProps) {
                       <ThumbsUp className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-green-700">Satisfied</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-800">100% guaranteed</p>
+                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-green-700">
+                        Satisfied
+                      </p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-800">
+                        100% guaranteed
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -243,8 +455,12 @@ export default function Hero({ content }: HeroProps) {
                       <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                     <div>
-                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-blue-700">24/7</p>
-                      <p className="text-xs sm:text-sm font-bold text-gray-800">Support ready</p>
+                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.1em] text-blue-700">
+                        24/7
+                      </p>
+                      <p className="text-xs sm:text-sm font-bold text-gray-800">
+                        Support ready
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -258,7 +474,9 @@ export default function Hero({ content }: HeroProps) {
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                     </div>
-                    <span className="text-xs font-semibold text-gray-700">4.9/5</span>
+                    <span className="text-xs font-semibold text-gray-700">
+                      4.9/5
+                    </span>
                   </div>
                 </div>
               </div>
@@ -266,7 +484,9 @@ export default function Hero({ content }: HeroProps) {
               {/* Bottom call-to-action indicator */}
               <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 rounded-full bg-white/90 shadow-lg border border-amber-100/60 px-6 py-2 backdrop-blur-sm flex items-center gap-2 animate-bounce">
                 <Phone className="h-4 w-4 text-amber-600" />
-                <span className="text-sm font-semibold text-gray-700">{content.phone || '+254 748 851 679'}</span>
+                <span className="text-sm font-semibold text-gray-700">
+                  {content.phone || "+254 748 851 679"}
+                </span>
               </div>
             </div>
           </div>

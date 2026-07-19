@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://boxedwithcare.co.ke/</loc>
+    <lastmod>2026-07-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/social-share.PNG</image:loc>
+      <image:title>Boxed With Care Movers – Professional Moving Services in Nairobi, Kenya</image:title>
+    </image:image>
+  </url>
+
+  <!-- Blog posts -->
+  <url>
+    <loc>https://boxedwithcare.co.ke/blog/essential-moving-checklist</loc>
+    <lastmod>2026-07-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/5849141/pexels-photo-5849141.jpeg</image:loc>
+      <image:title>The Essential Moving Checklist for Every Home</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://boxedwithcare.co.ke/blog/packing-hacks-fragile-belongings</loc>
+    <lastmod>2026-07-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/6841809/pexels-photo-6841809.jpeg</image:loc>
+      <image:title>Packing Hacks That Protect Fragile Belongings</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://boxedwithcare.co.ke/blog/estimate-moving-costs-budget</loc>
+    <lastmod>2026-07-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.pexels.com/photos/7045559/pexels-photo-7045559.jpeg</image:loc>
+      <image:title>How to Estimate Moving Costs for Your Budget</image:title>
+    </image:image>
+  </url>
+
+</urlset>

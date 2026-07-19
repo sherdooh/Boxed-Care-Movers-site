@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Menu, X, Phone, Package } from 'lucide-react';
 
-// Navigation links – static, moved outside the component for performance
 const NAV_LINKS = [
   { label: 'Home', href: '#home' },
   { label: 'Services', href: '#services' },
@@ -29,7 +28,6 @@ export default function Header({
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(Boolean(logoUrl));
 
-  // Close menu on resize to desktop width (lg: 1024px)
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -40,12 +38,10 @@ export default function Header({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Close menu when a nav link is clicked
   const handleNavClick = useCallback(() => {
     setMenuOpen(false);
   }, []);
 
-  // Sanitise phone number: keep only digits and '+'
   const phoneLink = phone?.replace(/[^\d+]/g, '') || '+254748851679';
 
   return (
@@ -58,35 +54,34 @@ export default function Header({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* ===== LOGO ===== */}
+          {/* ===== LOGO WITH PULSE BORDER (LARGER) ===== */}
           <a
             href="#home"
             className="flex items-center gap-3 group"
             aria-label={`${siteName} – Back to home`}
           >
+            {/* ✅ LARGER LOGO: w-14 h-14 (56px) */}
             <div
-              className={`w-12 h-12 rounded-full border-2 border-amber-400 flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300 ${
+              className={`w-14 h-14 rounded-full border-2 border-amber-400 flex items-center justify-center overflow-hidden shrink-0 transition-all duration-300 animate-pulse-slow ${
                 scrolled
                   ? 'bg-white shadow-md shadow-amber-100/60'
                   : 'bg-white/10 shadow-lg shadow-black/20 backdrop-blur-sm'
               }`}
             >
-              {logoUrl ? (
+              {logoLoaded && logoUrl ? (
                 <img
                   src={logoUrl}
                   alt={`${siteName} logo`}
-                  className="w-full h-full object-contain p-1"
-                  onError={(e) => {
-                      // Hide broken image, show Package icon fallback
-                      (e.target as HTMLImageElement).style.display = 'none';
-                      setLogoLoaded(false);
-                      }}
-                  width={48}
-                  height={48}
+                  className="w-full h-full object-cover"
+                  onError={() => setLogoLoaded(false)}
+                  width={56}
+                  height={56}
                   loading="eager"
                 />
               ) : (
-                <Package className="w-6 h-6 text-amber-500" strokeWidth={2} />
+                <div className="w-full h-full flex items-center justify-center bg-amber-100">
+                  <Package className="w-7 h-7 text-amber-600" strokeWidth={2} />
+                </div>
               )}
             </div>
             <div>
@@ -124,7 +119,6 @@ export default function Header({
 
           {/* ===== CTA + MOBILE TOGGLE ===== */}
           <div className="flex items-center gap-3">
-            {/* Phone link */}
             <a
               href={`tel:${phoneLink}`}
               className={`hidden sm:flex items-center gap-2 text-sm font-medium transition-colors ${
@@ -138,7 +132,6 @@ export default function Header({
               <span className="hidden md:inline">{phone}</span>
             </a>
 
-            {/* Quote CTA */}
             <a
               href="#contact"
               className="hidden sm:inline-flex items-center px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm hover:shadow-md"
@@ -146,7 +139,6 @@ export default function Header({
               Get a Quote
             </a>
 
-            {/* Mobile toggle button */}
             <button
               onClick={() => setMenuOpen((prev) => !prev)}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
@@ -162,7 +154,7 @@ export default function Header({
           </div>
         </div>
 
-        {/* ===== MOBILE MENU (smooth slide animation) ===== */}
+        {/* ===== MOBILE MENU ===== */}
         <div
           className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
             menuOpen ? 'max-h-[600px] opacity-100 mt-4' : 'max-h-0 opacity-0'

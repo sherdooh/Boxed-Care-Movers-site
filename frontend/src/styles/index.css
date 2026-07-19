@@ -74,3 +74,18 @@
     display: none;
   }
 }
+
+@keyframes pulse-slow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3);
+    border-color: #fbbf24;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.08);
+    border-color: #f59e0b;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2.5s ease-in-out infinite;
+}

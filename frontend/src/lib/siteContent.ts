@@ -54,10 +54,10 @@ export const defaultSiteContent: SiteContent = {
   logoUrl: 'https://nxqonargxulgqfdlhwtm.supabase.co/storage/v1/object/public/site-images/logo.webp',
   siteName: 'Boxed With Care Movers',
   siteTagline: 'MOVERS & PACKERS',
-  heroHeadline: "Moving Shouldn't Be Stressful.",
-  heroHighlight: '',
-  heroSubtext:
-    'Professional movers delivering reliable residential and commercial relocation services with care and precision.',
+heroHeadline: "Nairobi's Trusted Movers & Packers.",
+heroHighlight: 'Nairobi',
+heroSubtext:
+  'Boxed With Care offers professional moving and packing services in Nairobi, Kenya — residential, office, and long-distance relocations handled with care and precision.',
   heroCTA: 'Get a Free Quote',
   heroCallText: 'View Services',
   heroBgImage: '',
