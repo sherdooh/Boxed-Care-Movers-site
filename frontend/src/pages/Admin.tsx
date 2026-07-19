@@ -1541,50 +1541,86 @@ export default function Admin() {
 
   if (authState === "logged-out") {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
-        <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl border border-gray-200">
-          <p className="text-sm text-gray-500 uppercase tracking-[0.3em]">
-            Admin Login
-          </p>
-          <h1 className="text-3xl font-extrabold mt-4 mb-2">
-            Sign in to manage the site
-          </h1>
-          <p className="mb-6 text-gray-600">
-            Enter your admin credentials to edit content and view leads.
-          </p>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <label className="block">
-              <span className="text-sm font-semibold text-gray-700">
-                Username
-              </span>
-              <input
-                type="text"
-                value={loginUsername}
-                onChange={(e) => setLoginUsername(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-gray-200 p-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                required
-              />
-            </label>
-            <label className="block">
-              <span className="text-sm font-semibold text-gray-700">
-                Password
-              </span>
-              <input
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                className="mt-2 w-full rounded-2xl border border-gray-200 p-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
-                required
-              />
-            </label>
-            {loginError && <p className="text-sm text-red-600">{loginError}</p>}
-            <button
-              type="submit"
-              className="w-full px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition-colors"
-            >
-              Sign In
-            </button>
-          </form>
+      <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-amber-50/90 via-white to-amber-50/70">
+        <div className="w-full max-w-md">
+          {/* Company Branding */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              {defaultSiteContent.logoUrl ? (
+                <img
+                  src={defaultSiteContent.logoUrl}
+                  alt={defaultSiteContent.siteName}
+                  className="h-16 w-auto"
+                />
+              ) : (
+                <div className="text-4xl font-bold text-amber-600">
+                  {defaultSiteContent.siteName}
+                </div>
+              )}
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {defaultSiteContent.siteName}
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">
+              {defaultSiteContent.siteTagline}
+            </p>
+          </div>
+
+          {/* Login Card */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/70">
+            <h2 className="text-3xl font-extrabold text-gray-900 mt-4 mb-2">
+              Admin Sign In
+            </h2>
+            <p className="mb-6 text-gray-600">
+              Enter your admin credentials to manage the site.
+            </p>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <label className="block">
+                <span className="text-sm font-semibold text-gray-700">
+                  Username
+                </span>
+                <input
+                  type="text"
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-gray-200 p-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  required
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-semibold text-gray-700">
+                  Password
+                </span>
+                <input
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  className="mt-2 w-full rounded-2xl border border-gray-200 p-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  required
+                />
+              </label>
+              {loginError && (
+                <p className="text-sm text-red-600">{loginError}</p>
+              )}
+              <button
+                type="submit"
+                className="w-full px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl transition-colors shadow-md"
+              >
+                Sign In
+              </button>
+            </form>
+            <div className="mt-6 text-center text-sm text-gray-400">
+              <a href="/" className="hover:text-amber-500 transition-colors">
+                ← Back to Homepage
+              </a>
+            </div>
+          </div>
+
+          {/* Footer note */}
+          <div className="text-center mt-8 text-xs text-gray-400">
+            &copy; {new Date().getFullYear()} {defaultSiteContent.siteName}. All
+            rights reserved.
+          </div>
         </div>
       </div>
     );
@@ -2490,13 +2526,13 @@ export default function Admin() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8">
           <div className="w-full max-w-5xl overflow-y-auto max-h-[90vh] rounded-3xl bg-white shadow-2xl ring-1 ring-black/10">
             <div className="space-y-6 p-6">
-              {/* (The entire quote editor UI is identical to your original code) */}
+              {/* Header */}
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-600">
                     Quote Editor
                   </p>
-                  <h2 className="mt-2 text-xl font-bold text-gray-900">
+                  <h2 className="mt-2 text-3xl font-bold text-gray-900">
                     Edit quote before download
                   </h2>
                   {quoteEditorStatus && (
@@ -2526,7 +2562,401 @@ export default function Admin() {
                   </button>
                 </div>
               </div>
-              {/* All the rest – fields, inventory, pricing, terms – unchanged */}
+
+              {/* Quote Number & Dates */}
+              <div className="grid gap-4 md:grid-cols-3">
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Quote Number
+                  </span>
+                  <input
+                    type="text"
+                    value={quoteDraft.quoteNumber}
+                    onChange={(e) =>
+                      updateQuoteDraftField("quoteNumber", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Issue Date
+                  </span>
+                  <input
+                    type="date"
+                    value={quoteDraft.issueDate}
+                    onChange={(e) =>
+                      updateQuoteDraftField("issueDate", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Valid Until
+                  </span>
+                  <input
+                    type="date"
+                    value={quoteDraft.validUntil}
+                    onChange={(e) =>
+                      updateQuoteDraftField("validUntil", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+              </div>
+
+              {/* Customer Details */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Customer Name
+                  </span>
+                  <input
+                    type="text"
+                    value={quoteDraft.name}
+                    onChange={(e) =>
+                      updateQuoteDraftField("name", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Phone
+                  </span>
+                  <input
+                    type="text"
+                    value={quoteDraft.phone}
+                    onChange={(e) =>
+                      updateQuoteDraftField("phone", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Email
+                  </span>
+                  <input
+                    type="email"
+                    value={quoteDraft.email}
+                    onChange={(e) =>
+                      updateQuoteDraftField("email", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Move Type
+                  </span>
+                  <input
+                    type="text"
+                    value={quoteDraft.move_type}
+                    onChange={(e) =>
+                      updateQuoteDraftField("move_type", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+              </div>
+
+              {/* Addresses */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Pickup Address
+                  </span>
+                  <input
+                    type="text"
+                    value={quoteDraft.from_location}
+                    onChange={(e) =>
+                      updateQuoteDraftField("from_location", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Destination Address
+                  </span>
+                  <input
+                    type="text"
+                    value={quoteDraft.to_location}
+                    onChange={(e) =>
+                      updateQuoteDraftField("to_location", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </label>
+              </div>
+
+              {/* Additional Notes */}
+              <label className="block">
+                <span className="text-sm font-semibold text-gray-700">
+                  Additional Notes
+                </span>
+                <textarea
+                  value={quoteDraft.message}
+                  onChange={(e) =>
+                    updateQuoteDraftField("message", e.target.value)
+                  }
+                  rows={4}
+                  className="mt-2 w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                />
+              </label>
+
+              {/* Inventory */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-lg font-semibold text-gray-900">
+                    Inventory List
+                  </p>
+                  <button
+                    type="button"
+                    onClick={addInventoryRow}
+                    className="rounded-2xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+                  >
+                    Add Item
+                  </button>
+                </div>
+                <div className="overflow-hidden rounded-3xl border border-gray-200">
+                  <table className="min-w-full bg-white">
+                    <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+                      <tr>
+                        <th className="px-4 py-3">Item</th>
+                        <th className="px-4 py-3">Qty</th>
+                        <th className="px-4 py-3">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {quoteDraft.inventory.map((item, index) => (
+                        <tr key={index} className="border-t border-gray-100">
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={item.description}
+                              onChange={(e) =>
+                                updateInventoryRow(
+                                  index,
+                                  "description",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full rounded-2xl border border-gray-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={item.quantity}
+                              onChange={(e) =>
+                                updateInventoryRow(
+                                  index,
+                                  "quantity",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full rounded-2xl border border-gray-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              type="button"
+                              onClick={() => removeInventoryRow(index)}
+                              className="rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100"
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Services */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-lg font-semibold text-gray-900">
+                    Services
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // You may implement a similar add service row if you want
+                      // For now, we use a simple text input
+                      setQuoteDraft((prev) => ({
+                        ...prev!,
+                        services: [...prev!.services, ""],
+                      }));
+                    }}
+                    className="rounded-2xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+                  >
+                    Add Service
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {quoteDraft.services.map((service, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        value={service}
+                        onChange={(e) => {
+                          const newServices = [...quoteDraft.services];
+                          newServices[index] = e.target.value;
+                          setQuoteDraft((prev) => ({
+                            ...prev!,
+                            services: newServices,
+                          }));
+                        }}
+                        className="flex-1 rounded-2xl border border-gray-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                        placeholder="Service name"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newServices = quoteDraft.services.filter(
+                            (_, i) => i !== index,
+                          );
+                          setQuoteDraft((prev) => ({
+                            ...prev!,
+                            services: newServices,
+                          }));
+                        }}
+                        className="rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pricing Breakdown */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-lg font-semibold text-gray-900">
+                    Pricing Breakdown
+                  </p>
+                  <button
+                    type="button"
+                    onClick={addPricingRow}
+                    className="rounded-2xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+                  >
+                    Add Price Line
+                  </button>
+                </div>
+                <div className="overflow-hidden rounded-3xl border border-gray-200">
+                  <table className="min-w-full bg-white">
+                    <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
+                      <tr>
+                        <th className="px-4 py-3">Service</th>
+                        <th className="px-4 py-3">Amount</th>
+                        <th className="px-4 py-3">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {quoteDraft.pricing.map((line, index) => (
+                        <tr key={index} className="border-t border-gray-100">
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={line.description}
+                              onChange={(e) =>
+                                updatePricingRow(
+                                  index,
+                                  "description",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full rounded-2xl border border-gray-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={line.amount}
+                              onChange={(e) =>
+                                updatePricingRow(
+                                  index,
+                                  "amount",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-full rounded-2xl border border-gray-200 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              type="button"
+                              onClick={() => removePricingRow(index)}
+                              className="rounded-2xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-100"
+                            >
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Total Price (auto-calculated) */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Total Price
+                  </span>
+                  <input
+                    type="text"
+                    value={quoteDraft.total_price}
+                    readOnly
+                    className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-100 p-3 text-sm text-gray-700 focus:outline-none"
+                  />
+                  <p className="mt-2 text-xs text-gray-500">
+                    Automatically calculated from the pricing breakdown.
+                  </p>
+                </label>
+              </div>
+
+              {/* Terms & Conditions */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-lg font-semibold text-gray-900">
+                    Terms & Conditions
+                  </p>
+                  <button
+                    type="button"
+                    onClick={addTerm}
+                    className="rounded-2xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-200"
+                  >
+                    Add Term
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {quoteDraft.terms.map((term, index) => (
+                    <div key={index} className="flex gap-3">
+                      <textarea
+                        value={term}
+                        onChange={(e) => updateTerm(index, e.target.value)}
+                        rows={2}
+                        className="min-h-[62px] w-full rounded-2xl border border-gray-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeTerm(index)}
+                        className="rounded-2xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

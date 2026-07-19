@@ -369,6 +369,14 @@ router.patch("/:id", auth, async (req, res, next) => {
 // ============================================================
 router.delete("/:id", auth, async (req, res, next) => {
   try {
+    // Delete related activities and notes first (foreign key constraints)
+    await pool.query(`DELETE FROM lead_activities WHERE lead_id = $1`, [
+      req.params.id,
+    ]);
+    await pool.query(`DELETE FROM lead_notes WHERE lead_id = $1`, [
+      req.params.id,
+    ]);
+    // Then delete the lead
     const result = await pool.query(`DELETE FROM leads WHERE id = $1`, [
       req.params.id,
     ]);
@@ -377,19 +385,7 @@ router.delete("/:id", auth, async (req, res, next) => {
       return res.status(404).json({ error: "Lead not found" });
     }
 
-    // log the deletion)
-    await pool.query(
-      `INSERT INTO lead_activities (id, lead_id, activity_type, description, created_by)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [
-        `act_${Date.now()}`,
-        req.params.id,
-        "deleted",
-        "Lead permanently deleted",
-        req.admin?.username || "admin",
-      ],
-    );
-
+    // og the deletion
     res.status(204).send(); // No content – successful deletion
   } catch (err) {
     next(err);
