@@ -1,5 +1,5 @@
 const express = require("express");
-const { body, validationResult, query } = require("express-validator");
+const { body, validationResult } = require("express-validator");
 const { pool } = require("../db");
 const auth = require("../middleware/auth");
 
@@ -19,18 +19,17 @@ router.get("/", auth, async (req, res, next) => {
       limit = 20,
     } = req.query;
 
-    // Build WHERE clause
     const conditions = [];
     const params = [];
 
     if (status && status !== "all") {
-      conditions.push("status = ?");
+      conditions.push("status = $" + (params.length + 1));
       params.push(status);
     }
 
     if (search) {
       conditions.push(
-        "(name LIKE ? OR email LIKE ? OR phone LIKE ? OR id LIKE ?)",
+        `(name ILIKE $${params.length + 1} OR email ILIKE $${params.length + 2} OR phone ILIKE $${params.length + 3} OR id ILIKE $${params.length + 4})`,
       );
       const searchTerm = `%${search}%`;
       params.push(searchTerm, searchTerm, searchTerm, searchTerm);
@@ -40,49 +39,42 @@ router.get("/", auth, async (req, res, next) => {
       ? `WHERE ${conditions.join(" AND ")}`
       : "";
 
-    // Valid sort columns
-    const validSortColumns = [
-      "created_at",
-      "move_date",
-      "name",
-      "status",
-      "updated_at",
-    ];
+    const validSortColumns = ["created_at", "move_date", "name", "status"];
     const sortColumn = validSortColumns.includes(sortBy)
       ? sortBy
       : "created_at";
     const order = sortOrder.toUpperCase() === "ASC" ? "ASC" : "DESC";
 
     // Count total
-    const [countResult] = await pool.query(
-      `SELECT COUNT(*) as total FROM leads ${whereClause}`,
-      params,
-    );
-    const total = countResult[0].total;
+    const countQuery = `SELECT COUNT(*) as total FROM leads ${whereClause}`;
+    const countResult = await pool.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
 
     // Get paginated results
     const offset = (parseInt(page) - 1) * parseInt(limit);
-    const [rows] = await pool.query(
-      `SELECT 
+    const dataParams = [...params, parseInt(limit), offset];
+    const dataQuery = `
+      SELECT 
         id, date, name, email, phone, from_location, to_location,
         current_floor, destination_floor, current_size, destination_size,
         move_date, move_type, message, quoteNumber,
         status, status_updated_at, created_at, notes, admin_notes,
         viewed_at, last_updated_by
-       FROM leads 
-       ${whereClause}
-       ORDER BY ${sortColumn} ${order}
-       LIMIT ? OFFSET ?`,
-      [...params, parseInt(limit), offset],
-    );
+      FROM leads
+      ${whereClause}
+      ORDER BY ${sortColumn} ${order}
+      LIMIT $${dataParams.length - 1} OFFSET $${dataParams.length}
+    `;
+    const dataResult = await pool.query(dataQuery, dataParams);
+    const rows = dataResult.rows;
 
     // Get status counts
-    const [statusCounts] = await pool.query(`
+    const countsQuery = `
       SELECT status, COUNT(*) as count 
       FROM leads 
       GROUP BY status
-    `);
-
+    `;
+    const countsResult = await pool.query(countsQuery);
     const counts = {
       all: total,
       new: 0,
@@ -91,9 +83,8 @@ router.get("/", auth, async (req, res, next) => {
       booked: 0,
       cancelled: 0,
     };
-
-    statusCounts.forEach((row) => {
-      counts[row.status] = row.count;
+    countsResult.rows.forEach((row) => {
+      counts[row.status] = parseInt(row.count);
     });
 
     res.json({
@@ -116,36 +107,36 @@ router.get("/", auth, async (req, res, next) => {
 // ============================================================
 router.get("/:id", auth, async (req, res, next) => {
   try {
-    const [rows] = await pool.query(`SELECT * FROM leads WHERE id = ?`, [
+    const result = await pool.query(`SELECT * FROM leads WHERE id = $1`, [
       req.params.id,
     ]);
 
-    if (rows.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Lead not found" });
     }
 
     // Get activities
-    const [activities] = await pool.query(
-      `SELECT * FROM lead_activities WHERE lead_id = ? ORDER BY created_at DESC LIMIT 50`,
+    const activitiesResult = await pool.query(
+      `SELECT * FROM lead_activities WHERE lead_id = $1 ORDER BY created_at DESC LIMIT 50`,
       [req.params.id],
     );
 
     // Get notes
-    const [notes] = await pool.query(
-      `SELECT * FROM lead_notes WHERE lead_id = ? ORDER BY created_at DESC`,
+    const notesResult = await pool.query(
+      `SELECT * FROM lead_notes WHERE lead_id = $1 ORDER BY created_at DESC`,
       [req.params.id],
     );
 
     // Mark as viewed
     await pool.query(
-      `UPDATE leads SET viewed_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      `UPDATE leads SET viewed_at = CURRENT_TIMESTAMP WHERE id = $1`,
       [req.params.id],
     );
 
     res.json({
-      ...rows[0],
-      activities,
-      notes,
+      ...result.rows[0],
+      activities: activitiesResult.rows,
+      notes: notesResult.rows,
     });
   } catch (err) {
     next(err);
@@ -164,21 +155,21 @@ router.patch("/:id/status", auth, async (req, res, next) => {
   }
 
   try {
-    const [result] = await pool.query(
+    const result = await pool.query(
       `UPDATE leads 
-       SET status = ?, status_updated_at = CURRENT_TIMESTAMP, last_updated_by = ?
-       WHERE id = ?`,
+       SET status = $1, status_updated_at = CURRENT_TIMESTAMP, last_updated_by = $2
+       WHERE id = $3`,
       [status, req.admin?.username || "admin", req.params.id],
     );
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({ error: "Lead not found" });
     }
 
     // Log activity
     await pool.query(
       `INSERT INTO lead_activities (id, lead_id, activity_type, description, data, created_by)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         `act_${Date.now()}`,
         req.params.id,
@@ -215,7 +206,7 @@ router.post(
       const noteId = `note_${Date.now()}`;
       await pool.query(
         `INSERT INTO lead_notes (id, lead_id, content, is_internal, created_by)
-       VALUES (?, ?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4, $5)`,
         [
           noteId,
           req.params.id,
@@ -267,17 +258,17 @@ router.post(
       move_type,
       message,
       quoteNumber,
-      // New fields
       notes,
     } = req.body;
 
     try {
-      await pool.query(
+      const result = await pool.query(
         `INSERT INTO leads 
-       (id, date, name, email, phone, from_location, to_location, 
-        current_floor, destination_floor, current_size, destination_size, 
-        move_date, move_type, message, quoteNumber, notes, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, date, name, email, phone, from_location, to_location, 
+          current_floor, destination_floor, current_size, destination_size, 
+          move_date, move_type, message, quoteNumber, notes, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+         RETURNING *`,
         [
           id,
           date,
@@ -302,7 +293,7 @@ router.post(
       // Log activity
       await pool.query(
         `INSERT INTO lead_activities (id, lead_id, activity_type, description, data)
-       VALUES (?, ?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4, $5)`,
         [
           `act_${Date.now()}`,
           id,
@@ -312,7 +303,7 @@ router.post(
         ],
       );
 
-      res.status(201).json({ id, ...req.body });
+      res.status(201).json(result.rows[0]);
     } catch (err) {
       console.error("Error creating lead:", err);
       next(err);
@@ -324,42 +315,44 @@ router.post(
 // PATCH /api/leads/:id – Update lead (admin)
 // ============================================================
 router.patch("/:id", auth, async (req, res, next) => {
-  const { notes, admin_notes, ...rest } = req.body;
+  const { notes, admin_notes, status } = req.body;
 
   try {
     const updates = [];
     const values = [];
 
-    // Build dynamic update query
-    const allowedFields = ["notes", "admin_notes", "status"];
-    Object.entries(req.body).forEach(([key, value]) => {
-      if (allowedFields.includes(key)) {
-        updates.push(`${key} = ?`);
-        values.push(value);
-      }
-    });
+    if (notes !== undefined) {
+      updates.push(`notes = $${values.length + 1}`);
+      values.push(notes);
+    }
+    if (admin_notes !== undefined) {
+      updates.push(`admin_notes = $${values.length + 1}`);
+      values.push(admin_notes);
+    }
+    if (status !== undefined) {
+      updates.push(`status = $${values.length + 1}`);
+      values.push(status);
+    }
 
     if (updates.length === 0) {
       return res.status(400).json({ error: "No valid fields to update" });
     }
 
     values.push(req.params.id);
-    await pool.query(
-      `UPDATE leads SET ${updates.join(", ")} WHERE id = ?`,
-      values,
-    );
+    const query = `UPDATE leads SET ${updates.join(", ")} WHERE id = $${values.length}`;
+    await pool.query(query, values);
 
     // Log activity for status changes
-    if (req.body.status) {
+    if (status) {
       await pool.query(
         `INSERT INTO lead_activities (id, lead_id, activity_type, description, data, created_by)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4, $5, $6)`,
         [
           `act_${Date.now()}`,
           req.params.id,
           "status_change",
           `Status updated`,
-          JSON.stringify({ new_status: req.body.status }),
+          JSON.stringify({ new_status: status }),
           req.admin?.username || "admin",
         ],
       );
@@ -376,14 +369,13 @@ router.patch("/:id", auth, async (req, res, next) => {
 // ============================================================
 router.delete("/:id", auth, async (req, res, next) => {
   try {
-    // Soft delete: mark as cancelled and archive
-    await pool.query(`UPDATE leads SET status = 'cancelled' WHERE id = ?`, [
+    await pool.query(`UPDATE leads SET status = 'cancelled' WHERE id = $1`, [
       req.params.id,
     ]);
 
     await pool.query(
       `INSERT INTO lead_activities (id, lead_id, activity_type, description, created_by)
-       VALUES (?, ?, ?, ?, ?)`,
+       VALUES ($1, $2, $3, $4, $5)`,
       [
         `act_${Date.now()}`,
         req.params.id,
